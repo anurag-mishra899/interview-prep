@@ -749,6 +749,458 @@ Production Serving (Ultra-Low Latency):
 
 ---
 
+### Scenario 5: Intelligent Document Processing (IDP) for KYC & Loan Origination
+**Business Context:**
+> "We're a retail bank processing 10,000 loan applications per month. Each application includes 5-20 documents: driver's license, pay stubs, bank statements, tax returns, employment verification letters. Currently, underwriters manually review and extract data from these documents, taking 2-4 hours per application and costing $50/application. We need an intelligent document processing (IDP) system to automate extraction, reduce processing time to <15 minutes, cut costs by 70%, and ensure compliance with KYC regulations. Design the IDP platform on Databricks."
+
+**Key Requirements to Clarify:**
+- **Document volume?** (10K applications/month × 10 docs/app = 100K documents/month)
+- **Document types?** (PDFs, images, scanned documents, handwritten forms?)
+- **Accuracy requirements?** (95%+ extraction accuracy, 100% for critical fields like SSN?)
+- **Compliance?** (KYC/AML verification, document authenticity, retention requirements?)
+- **Turnaround time?** (Real-time for digital applications vs 24h for mail-in?)
+- **Integration?** (Loan origination system, core banking, credit bureau APIs?)
+- **Languages?** (English only or multi-language for immigrant customers?)
+
+**Your Architecture:**
+
+```
+Document Ingestion & Classification:
+├── Document Sources:
+│   ├── Digital uploads: Customer portal, mobile app (JPEG, PNG, PDF)
+│   ├── Email attachments: Applications sent via email (PDF, DOCX)
+│   ├── Scanned documents: Branch submissions (TIFF, multi-page PDF)
+│   ├── Fax: Legacy channel (still 10% of applications, poor quality)
+│   └── Third-party: Employment verification services, Equifax income verification
+├── Databricks Auto Loader (Incremental File Ingestion):
+│   ├── Monitor cloud storage (S3, ADLS) for new documents
+│   ├── Schema: document_id, application_id, upload_timestamp, file_path, file_type
+│   ├── Trigger: Process documents within 5 minutes of upload
+│   └── Store metadata in Delta Lake Bronze layer
+├── Document Classification (ML Model):
+│   ├── Problem: Identify document type before extraction
+│   ├── Classes: Driver's License, Passport, Pay Stub, Bank Statement, Tax Return (W-2, 1040),
+│   │          Employment Letter, Utility Bill, Loan Application Form (20+ classes)
+│   ├── Model: Vision Transformer (ViT) or CNN for image classification
+│   │   ├── Training: 100K labeled documents (historical applications)
+│   │   ├── Accuracy: 98% (critical for routing to correct extraction pipeline)
+│   │   └── Inference: <500ms per document (GPU acceleration)
+│   ├── Output: document_type, confidence_score
+│   └── Routing: If confidence < 0.90 → manual review queue
+├── Document Quality Check:
+│   ├── Image quality metrics:
+│   │   ├── Resolution: Must be ≥300 DPI (Optical Character Recognition minimum)
+│   │   ├── Blur detection: Laplacian variance (reject if too blurry)
+│   │   ├── Orientation: Auto-rotate using EXIF data or ML
+│   │   └── Brightness/contrast: Auto-adjust for scanned documents
+│   ├── Authenticity checks:
+│   │   ├── Watermark detection (for official documents)
+│   │   ├── Tamper detection (pixel analysis, metadata inspection)
+│   │   └── Duplicate detection (hash-based, prevent fraud)
+│   └── Outcome: Pass → extraction pipeline, Fail → request reupload
+
+OCR & Text Extraction (Multi-Modal):
+├── OCR Engine Selection (Document Type Specific):
+│   ├── Printed text (pay stubs, bank statements):
+│   │   ├── Tesseract OCR (open-source, good for structured docs)
+│   │   ├── AWS Textract (managed service, table extraction)
+│   │   └── Azure AI Document Intelligence (formerly Form Recognizer)
+│   ├── Handwritten text (loan applications, signatures):
+│   │   ├── Azure AI Document Intelligence (handwriting recognition)
+│   │   ├── Google Cloud Vision API
+│   │   └── Custom transformer model (fine-tuned on bank forms)
+│   ├── Complex layouts (tax returns with tables, multi-column):
+│   │   ├── AWS Textract (AnalyzeDocument API with tables/forms)
+│   │   ├── LayoutLM (Microsoft, understands document layout)
+│   │   └── Donut (OCR-free, end-to-end transformer)
+│   └── Choice: Start with AWS Textract (managed, high accuracy), fallback to custom models
+├── OCR Execution Pipeline (Delta Live Tables):
+│   ├── Bronze → Silver transformation:
+│   │   ├── Call OCR API (AWS Textract, batched for cost)
+│   │   ├── Extract raw text, bounding boxes, confidence scores
+│   │   ├── Store in Delta Lake: document_id, page_number, raw_text, ocr_metadata
+│   │   └── Handle multi-page PDFs (process each page, maintain page order)
+│   ├── Post-processing:
+│   │   ├── Text cleaning: Remove noise, fix common OCR errors (l→1, O→0)
+│   │   ├── Line/paragraph assembly: Reconstruct from bounding boxes
+│   │   ├── Table extraction: Preserve table structure (critical for bank statements)
+│   │   └── Confidence filtering: Flag low-confidence words (<0.8) for review
+│   └── Storage: Delta tables partitioned by document_type, date
+├── Performance Optimization:
+│   ├── Parallel processing: 100 documents in parallel (Databricks auto-scaling)
+│   ├── Caching: Reuse OCR results if document re-uploaded (hash-based)
+│   ├── Cost management: AWS Textract pricing ($1.50 per 1K pages)
+│   │   └── Budget: 100K docs/month × 3 pages avg = 300K pages = $450/month
+│   └── SLA: Process 95% of documents within 10 minutes
+
+Named Entity Recognition (NER) & Field Extraction:
+├── Pre-trained NER Models (for common entities):
+│   ├── spaCy (en_core_web_trf): Person names, organizations, dates, money
+│   ├── Hugging Face models: FinBERT (financial entities), BERT-NER
+│   └── AWS Comprehend: PII detection (SSN, phone, email, address)
+├── Custom NER for Financial Documents (Fine-tuned):
+│   ├── Training data:
+│   │   ├── Annotated documents (20K pay stubs, 10K bank statements, etc.)
+│   │   ├── Labels: Applicant Name, SSN, Date of Birth, Employer, Income Amount,
+│   │   │          Account Number, Bank Name, Balance, Transaction Date, etc.
+│   │   └── Annotation tools: Label Studio, Prodigy (active learning)
+│   ├── Model architecture:
+│   │   ├── BERT-based (DistilBERT for speed)
+│   │   ├── Input: Tokenized OCR text
+│   │   ├── Output: BIO tags (Begin, Inside, Outside) for each token
+│   │   └── Example: "John Smith earns $5,000/month" →
+│   │       John=B-NAME, Smith=I-NAME, earns=O, $5,000=B-INCOME, /month=I-INCOME
+│   ├── Training: Fine-tune on financial document corpus
+│   │   ├── Databricks MLflow for experiment tracking
+│   │   ├── Hyperparameter tuning: Learning rate, epochs, batch size
+│   │   └── Evaluation: F1-score >95% per entity type
+│   └── Inference: <2 seconds per document (GPU)
+├── Document-Specific Extraction Logic:
+│   ├── Driver's License / Passport:
+│   │   ├── Fields: Name, DOB, Address, License Number, Expiration Date
+│   │   ├── Validation: Check expiration (must be valid), verify format (DL# regex)
+│   │   └── Cross-check: Name matches loan application name (fuzzy match, Levenshtein distance)
+│   ├── Pay Stub:
+│   │   ├── Fields: Employer, Employee Name, Pay Period, Gross Pay, Net Pay, YTD Income
+│   │   ├── Validation: Pay period within last 60 days, YTD consistent with pay period
+│   │   ├── Calculation: Annualized income = (Gross Pay / Pay Period Days) × 365
+│   │   └── Red flags: Income inconsistent with stated income on application (>20% diff)
+│   ├── Bank Statement:
+│   │   ├── Fields: Account Holder, Account Number, Statement Period, Beginning Balance,
+│   │   │          Ending Balance, Deposits, Withdrawals, Average Daily Balance
+│   │   ├── Table extraction: Transaction history (date, description, amount, balance)
+│   │   ├── Analysis: NSF fees (overdrafts), large deposits (gift vs income), regularity
+│   │   └── Red flags: Negative balance, suspicious deposits (fraud indicator)
+│   ├── Tax Return (W-2, 1040):
+│   │   ├── W-2 fields: Employer EIN, Employee SSN, Wages (Box 1), Federal Tax Withheld
+│   │   ├── 1040 fields: AGI (Adjusted Gross Income), Total Tax, Refund/Amount Owed
+│   │   ├── Validation: W-2 wages match 1040 Line 1, SSN matches applicant
+│   │   └── Risk: Self-employed (1099 income) requires 2 years of tax returns
+│   ├── Employment Verification Letter:
+│   │   ├── Fields: Employer name, Employee name, Title, Start date, Salary, Employment status
+│   │   ├── Authenticity: Company letterhead, authorized signature, contact info
+│   │   └── Verification: Call employer HR (10% sample for fraud prevention)
+│   └── Utility Bill (for address verification):
+│       ├── Fields: Customer name, Service address, Bill date, Amount due
+│       ├── Validation: Address matches loan application, bill date within 90 days
+│       └── Purpose: Proof of residence for KYC compliance
+├── Extraction Confidence & Quality:
+│   ├── Per-field confidence score (from NER model)
+│   ├── Threshold: Confidence >0.90 for auto-accept, <0.90 → manual review
+│   ├── Human-in-the-loop: Uncertain fields routed to verification team
+│   └── Active learning: Manually corrected extractions → retrain NER model monthly
+
+Data Validation & Cross-Field Consistency:
+├── Business Rule Validation:
+│   ├── Income validation:
+│   │   ├── Pay stub income × 12 ≈ stated annual income (within 20%)
+│   │   ├── W-2 wages match bank deposits pattern
+│   │   └── Debt-to-income ratio: (Total monthly debt / Monthly income) ≤ 0.43 (QM rule)
+│   ├── Identity validation:
+│   │   ├── Name consistency: Application, DL, pay stub, bank statement (fuzzy match)
+│   │   ├── SSN consistency: W-2 SSN matches application SSN (exact match)
+│   │   ├── Address consistency: DL address matches utility bill (allow for recent move)
+│   │   └── DOB consistency: DL DOB matches application (applicant must be 18+)
+│   ├── Document recency:
+│   │   ├── Pay stubs: Last 2 months (60 days)
+│   │   ├── Bank statements: Last 2-3 months
+│   │   ├── Tax returns: Most recent tax year (or previous if current not filed yet)
+│   │   └── Utility bill: Last 90 days
+│   └── Red flags (fraud indicators):
+│       ├── Mismatched SSN across documents
+│       ├── Income inflation (pay stub shows higher income than W-2)
+│       ├── Altered documents (pixel analysis, font inconsistencies)
+│       ├── Same document submitted for multiple applications (fraud ring)
+│       └── Unusual patterns: Round numbers, no deductions on pay stub (fake)
+├── External Verification (API Integrations):
+│   ├── SSN verification: Experian, Equifax (verify SSN is valid and matches name/DOB)
+│   ├── Employment verification: The Work Number (Equifax service, instant verification)
+│   ├── Income verification: Equifax Workforce Solutions, Plaid (bank account aggregation)
+│   ├── Identity verification: IDology, Jumio (biometric + document check)
+│   └── Fraud database: OFAC (sanctions list), LexisNexis (identity fraud)
+├── Decisioning Logic:
+│   ├── All critical fields extracted with >90% confidence → Auto-approve (80% of applications)
+│   ├── Some fields low confidence OR business rules fail → Manual review (15%)
+│   ├── Fraud indicators OR external verification fails → Decline / Request more docs (5%)
+│   └── SLA: Auto-approved applications processed in <15 minutes (vs 2-4 hours manual)
+
+Data Storage & Governance (Unity Catalog):
+├── Delta Lake Architecture:
+│   ├── Bronze (Raw Documents):
+│   │   ├── Volumes: Store original files (PDF, images) in Unity Catalog managed volumes
+│   │   ├── Metadata: document_id, application_id, upload_time, file_path, file_hash
+│   │   ├── Retention: 7 years (regulatory requirement for loan documents)
+│   │   └── Encryption: Customer-managed keys (AWS KMS, Azure Key Vault)
+│   ├── Silver (Processed Data):
+│   │   ├── OCR results: document_id, page_number, raw_text, confidence_scores
+│   │   ├── Extracted entities: document_id, entity_type, entity_value, confidence
+│   │   ├── Table: structured tables extracted from bank statements, tax returns
+│   │   └── Schema enforcement: Reject malformed data, handle schema evolution
+│   └── Gold (Structured Loan Data):
+│       ├── Aggregated view: application_id, applicant_name, ssn_masked, income, assets,
+│       │                    liabilities, credit_score, document_completeness_score
+│       ├── Star schema: fact_applications, dim_applicants, dim_documents
+│       └── Downstream: Loan origination system (LOS), underwriting engine, core banking
+├── Unity Catalog Governance:
+│   ├── Data lineage: Original document → OCR → NER → Validation → LOS
+│   ├── Access control:
+│   │   ├── Underwriters: Read extracted data, not raw SSN/account numbers (masked)
+│   │   ├── Compliance team: Full access (audit trail)
+│   │   ├── Data scientists: Access to de-identified data only (for model training)
+│   │   └── Row-level security: Users can only see applications in their branch/region
+│   ├── PII protection:
+│   │   ├── Column masking: SSN → ***-**-1234, Account Number → ****5678
+│   │   ├── Dynamic views: Show full SSN only to authorized users
+│   │   └── Audit log: Track every access to PII fields (who, when, why)
+│   ├── Document versioning (Delta Lake time travel):
+│   │   ├── If document is replaced/corrected, keep history
+│   │   ├── Reproduce exact data state for any application on any date
+│   │   └── Compliance: Prove to auditors what data was available at decision time
+│   └── Data quality metrics:
+│       ├── OCR accuracy: % of documents with confidence >90%
+│       ├── Extraction accuracy: Manual review of 1% sample (ground truth)
+│       ├── STP rate (Straight-Through Processing): % auto-approved without human touch
+│       └── Alert on drift: If accuracy drops below 95%, trigger model retraining
+
+ML Model Management & Continuous Improvement:
+├── MLflow Tracking:
+│   ├── Document classifier: Track accuracy, confusion matrix, per-class F1
+│   ├── NER model: Track per-entity F1, training time, inference latency
+│   ├── Fraud detection: Track precision, recall, false positive rate
+│   └── A/B testing: Compare new model vs production model (shadow mode)
+├── Model Retraining Strategy:
+│   ├── Trigger: Accuracy drops below 95% (concept drift)
+│   ├── Frequency: Monthly scheduled retrain + ad-hoc for new document types
+│   ├── Training data: Last 6 months of manually verified extractions (active learning)
+│   ├── Evaluation: Hold-out test set from most recent month (temporal validation)
+│   └── Promotion: New model promoted to Production stage if ≥1% improvement
+├── Feedback Loop (Human-in-the-Loop):
+│   ├── Underwriters correct extraction errors via web UI
+│   ├── Corrections stored in Delta Lake → training data for next retrain
+│   ├── Track error patterns: Which document types / fields have highest error rate?
+│   ├── Prioritize improvements: Focus on high-volume, high-error documents
+│   └── Active learning: Model requests labels for uncertain predictions
+├── Document Type Expansion:
+│   ├── Start with top 80% (pay stubs, bank statements, tax returns, IDs)
+│   ├── Gradually add: Divorce decrees, property deeds, business tax returns (1120)
+│   ├── Custom models per document type (specialist models outperform generalist)
+│   └── Template matching: For standardized forms (e.g., specific bank's statement format)
+
+Integration & Downstream Workflows:
+├── Loan Origination System (LOS) Integration:
+│   ├── API: REST API to push extracted data to LOS (Encompass, Calyx Point)
+│   ├── Format: JSON with extracted fields + confidence scores
+│   ├── Pre-fill: Auto-populate loan application form (reduce manual entry)
+│   └── Status update: IDP complete → trigger underwriting workflow
+├── Underwriting Decision Engine:
+│   ├── Input: Extracted income, assets, liabilities, credit score (from bureau)
+│   ├── Rules engine: DTI ≤ 43%, LTV ≤ 80%, credit score ≥ 620 (for conventional loan)
+│   ├── ML model: Predict default probability (separate credit risk model)
+│   └── Decision: Auto-approve, Manual review, or Decline (with adverse action notice)
+├── Compliance Reporting:
+│   ├── KYC/AML: Document collection audit trail (prove due diligence)
+│   ├── Fair lending: Track document verification rates by demographic (no disparate impact)
+│   ├── QM (Qualified Mortgage): Verify ability-to-repay (income, assets, liabilities)
+│   └── Audit: Regulator can access original documents + extraction audit trail via Unity Catalog
+├── Customer Communication:
+│   ├── Status updates: SMS/email notifications (documents received, under review, approved)
+│   ├── Missing documents: Auto-generate request list (need 2nd pay stub, recent bank statement)
+│   ├── Self-service portal: Customers can view processing status, upload additional docs
+│   └── Explanation: If declined, provide reasons (low income, insufficient assets, per ECOA)
+
+Monitoring & Performance Metrics:
+├── Operational Metrics:
+│   ├── Volume: Documents processed per day, per hour (monitor capacity)
+│   ├── Latency: P50, P95, P99 processing time (target: <10 min for 95%)
+│   ├── STP rate: % of applications processed end-to-end without human intervention
+│   │   └── Target: 80% STP (baseline: 0% manual process)
+│   ├── Manual review queue size: # of documents awaiting human verification
+│   └── Cost per document: OCR cost + compute cost + human review cost
+│       └── Target: $5/application (vs $50 baseline) = 90% reduction
+├── Quality Metrics:
+│   ├── OCR accuracy: % of characters correctly recognized (>98% for printed, >90% handwritten)
+│   ├── Field extraction accuracy: % of fields correctly extracted (>95%)
+│   ├── End-to-end accuracy: % of applications with all critical fields correct (>90%)
+│   ├── False positive rate: % of applications incorrectly auto-approved (target: <1%)
+│   └── False negative rate: % of applications incorrectly declined (target: <2%)
+├── Business Impact Metrics:
+│   ├── Processing time: Avg time from document upload to underwriting decision
+│   │   └── Target: 15 minutes (vs 2-4 hours baseline) = 88% reduction
+│   ├── Cost savings: (Manual cost - Automated cost) × Volume
+│   │   └── Target: ($50 - $5) × 10K apps/month = $450K/month savings
+│   ├── Customer satisfaction: NPS score, time-to-close (faster approval = happier customers)
+│   ├── Fraud detection rate: # of fraudulent applications caught by IDP
+│   └── Compliance: % of loans with complete documentation (100% required)
+├── Alerts & Escalation:
+│   ├── Critical: OCR service down, accuracy drops below 90% → PagerDuty
+│   ├── Warning: Manual review queue >500 documents → Slack notification
+│   ├── Info: Daily summary report (volume, STP rate, errors) → Email to ops team
+│   └── Dashboard: Real-time monitoring via Databricks SQL (Grafana integration)
+```
+
+**Key Technology Stack:**
+
+```
+Databricks Platform:
+├── Auto Loader: Incremental document ingestion from cloud storage
+├── Delta Live Tables: ETL pipelines for OCR → NER → Validation
+├── Delta Lake: Storage for documents (volumes) + extracted data (tables)
+├── Unity Catalog: Governance, lineage, access control, PII protection
+├── MLflow: Track document classifier + NER models + fraud detection
+├── Model Serving: Deploy NER models for real-time extraction
+├── Databricks SQL: Analytics dashboard for monitoring
+└── Workflows: Orchestrate end-to-end pipeline
+
+External Services:
+├── OCR: AWS Textract (primary), Azure AI Document Intelligence (backup)
+├── NER: Hugging Face transformers (fine-tuned), spaCy, AWS Comprehend
+├── Verification: Equifax (SSN, employment, income), Plaid (bank accounts)
+├── Fraud: IDology, LexisNexis, OFAC
+└── Storage: S3 (AWS), ADLS (Azure) for raw documents
+
+ML Models:
+├── Document Classifier: Vision Transformer (ViT) or ResNet CNN (98% accuracy)
+├── NER: DistilBERT fine-tuned on financial documents (95% F1)
+├── Fraud Detection: Anomaly detection (Isolation Forest) + rules engine
+└── Image Quality: CNN for blur/orientation/tamper detection
+```
+
+**Key Trade-offs:**
+
+1. **Build vs Buy (OCR Engine)**:
+   - Build: Fine-tune open-source Tesseract + custom models → Full control, cheaper at scale
+   - Buy: AWS Textract, Azure AI → Faster time-to-market, managed, handles complex layouts
+   - **Decision**: Start with AWS Textract (speed), migrate to custom models if scale justifies (>1M docs/month)
+
+2. **Accuracy vs Speed**:
+   - High accuracy: Deep NER models (BERT) take 2-3 seconds per document
+   - High speed: Rule-based extraction + shallow models take <500ms
+   - **Decision**: Use deep models, parallelize across cluster (100 docs in 3 seconds = 0.03s effective latency)
+
+3. **Auto-approval vs Human Review**:
+   - Aggressive auto-approval (low confidence threshold) → 95% STP but 3% error rate → compliance risk
+   - Conservative (high threshold) → 70% STP but 0.5% error rate → higher cost, slower
+   - **Decision**: 90% confidence threshold → 80% STP, <1% error rate (balanced)
+
+4. **Generic vs Document-Specific Models**:
+   - Generic: One NER model for all documents → Easier to maintain, lower accuracy (90%)
+   - Specific: Separate models per document type → Higher accuracy (95%+), more complex
+   - **Decision**: Hybrid (generic for rare docs, specific for high-volume: pay stubs, bank statements)
+
+5. **Real-time vs Batch Processing**:
+   - Real-time: Process documents as uploaded → <5 min latency, customer-facing
+   - Batch: Process hourly/nightly → Cheaper (larger batches), acceptable for non-urgent
+   - **Decision**: Real-time for digital applications (80%), batch for mailed/faxed (20%)
+
+**Expected Deep-Dive Questions:**
+
+1. **"How do you handle poor-quality scanned documents (e.g., faxed documents with noise)?"**
+   - Answer: "Faxed documents are challenging due to low resolution (typically 200 DPI vs 300+ ideal) and noise. Our pipeline includes:
+
+   (1) **Preprocessing**: Apply image enhancement techniques—denoising (Gaussian blur), binarization (Otsu's method), deskewing (Hough transform for line detection), and super-resolution (ESRGAN to upscale 200 DPI → 300 DPI equivalent).
+
+   (2) **Adaptive OCR**: AWS Textract handles noisy images better than Tesseract. For extremely poor quality, we route to Azure AI Document Intelligence which has specialized models for degraded documents.
+
+   (3) **Confidence thresholding**: Low-quality docs typically have lower OCR confidence (<0.8). We automatically flag these for manual review rather than risking extraction errors.
+
+   (4) **Customer communication**: If document is unreadable, we proactively request a re-upload via mobile app (take a clear photo) rather than processing garbage.
+
+   (5) **Statistics**: We track 'unusable document rate' by channel. Fax has 30% unusable rate vs 5% for digital uploads. This drives our strategy to deprecate fax channel (offer $50 incentive to submit digitally)."
+
+2. **"How do you extract tables from bank statements while preserving structure?"**
+   - Answer: "Bank statement tables are complex—multi-column (Date, Description, Debit, Credit, Balance), variable row heights, sometimes multi-page. Our approach:
+
+   (1) **Table Detection**: AWS Textract's AnalyzeDocument API with FeatureTypes=['TABLES'] detects table boundaries and cell structure. It returns a JSON hierarchy: Table → Rows → Cells, preserving relationships.
+
+   (2) **Table Assembly**: We reconstruct the table as a Pandas DataFrame or Spark DataFrame. Each row becomes a transaction record with columns: transaction_date, description, amount, balance.
+
+   (3) **Post-processing**: Clean common OCR errors (comma in amounts: 1,234.56 → 1234.56), parse dates (handle formats: 01/15/24, Jan 15 2024, 15-Jan-24), categorize transactions (deposit, withdrawal, fee) using regex + ML classifier.
+
+   (4) **Validation**: Compute ending_balance = beginning_balance + deposits - withdrawals. If mismatch >$0.01, flag for review (possible OCR error or missing transaction).
+
+   (5) **Storage**: Store both raw table (JSON) and structured table (Delta Lake) for downstream analytics. Use structured format for income verification (sum all deposits, identify paycheck pattern), fraud detection (unusual transaction amounts).
+
+   (6) **Edge cases**: Some banks use two-column balance (running balance per transaction). We detect this pattern and compute final balance = last row balance."
+
+3. **"Walk me through your Named Entity Recognition (NER) training process for financial documents."**
+   - Answer: "Training a custom NER model requires high-quality labeled data and domain adaptation:
+
+   (1) **Data collection**: Start with 20K historical documents (pay stubs, bank statements, IDs) that were manually processed. These have ground truth labels (correct extractions).
+
+   (2) **Annotation**: Use Label Studio (open-source) or Prodigy (active learning tool). Annotators mark entities: <PERSON>John Smith</PERSON>, <SSN>123-45-6789</SSN>, <INCOME>$5,000</INCOME>. We use BIO tagging: Begin-Income, Inside-Income, Outside.
+
+   (3) **Quality control**: Double-annotation for 10% of data (two annotators label same doc), measure inter-annotator agreement (Cohen's Kappa). If <0.85, refine annotation guidelines.
+
+   (4) **Model selection**: DistilBERT (66M params, fast inference) fine-tuned on our corpus. Alternative: RoBERTa (125M params, higher accuracy but slower). We chose DistilBERT for 2s latency target.
+
+   (5) **Fine-tuning**: Use Hugging Face Transformers library. Hyperparameters: learning_rate=2e-5, epochs=3, batch_size=16. Train on Databricks GPU cluster (8× A100 GPUs, training time: 4 hours).
+
+   (6) **Evaluation**: Per-entity F1 score. Target: >95% for critical entities (SSN, Income), >90% for less critical (Employer name). Test on held-out 20% of data.
+
+   (7) **Error analysis**: For misclassified entities, identify patterns. E.g., model confuses 'Year-to-Date' income with 'Current Period' income on pay stubs. Add more training examples for this pattern.
+
+   (8) **Deployment**: Export model to ONNX format, deploy via Databricks Model Serving (GPU endpoint). Monitor inference latency (p95 <2s) and accuracy (monthly validation on new documents).
+
+   (9) **Active learning**: For predictions with confidence 0.7-0.9, route to human review. Corrected labels added to training set. Retrain monthly to adapt to new document variations."
+
+4. **"How do you ensure PII protection and compliance in the document processing pipeline?"**
+   - Answer: "PII protection is critical—SSN, account numbers, DOB are highly sensitive. Our multi-layer approach:
+
+   (1) **Encryption at rest**: All documents stored in Unity Catalog managed volumes with customer-managed keys (AWS KMS). Keys rotated quarterly. Delta tables also encrypted.
+
+   (2) **Encryption in transit**: All API calls (OCR, verification services) use TLS 1.3. No PII sent over HTTP.
+
+   (3) **Access control (Unity Catalog)**: Row-level security ensures users only see their region's applications. Column masking: Underwriters see SSN masked as ***-**-1234. Only compliance team sees full SSN, and access is audited.
+
+   (4) **Audit logging**: Every query touching PII columns logged: user_id, timestamp, query, purpose (e.g., 'underwriting review'). Logs immutable, retained 7 years.
+
+   (5) **Data minimization**: Extract only necessary fields. Don't store full bank statement text if we only need account balance. Reduces PII exposure.
+
+   (6) **Tokenization**: Replace SSN with token (hash) in downstream systems. LOS gets SSN_token, not actual SSN. Only source system (Databricks) can de-tokenize.
+
+   (7) **Retention policies**: Documents deleted after 7 years (regulatory requirement). Automated deletion via Delta Lake VACUUM + cloud storage lifecycle policies.
+
+   (8) **Data residency**: EU customers' documents stored in EU region (ADLS Europe West) to comply with GDPR. Unity Catalog enforces region boundaries.
+
+   (9) **Vendor compliance**: AWS Textract is SOC 2, HIPAA, PCI-DSS compliant. DPA (Data Processing Agreement) in place. We don't send SSN to OCR API (mask before sending, extract via NER post-OCR).
+
+   (10) **Incident response**: If PII breach detected (e.g., unauthorized access), automated workflow: Alert CISO, lock account, audit log review, customer notification within 72 hours (GDPR requirement)."
+
+5. **"How do you measure and improve the Straight-Through Processing (STP) rate?"**
+   - Answer: "STP rate is the % of applications processed end-to-end without human intervention. It's our North Star metric for automation success.
+
+   **Measurement**:
+   - STP rate = (# auto-approved applications) / (# total applications) × 100
+   - Baseline: 0% (all manual). Target: 80% STP.
+   - Track by document type: Pay stubs have 90% STP (standardized), tax returns have 60% STP (complex layout).
+
+   **Improvement levers**:
+   (1) **Confidence threshold tuning**: Current threshold: 0.90. If we lower to 0.85, STP increases to 85% but error rate increases from 0.8% to 2.0%. We optimize threshold using cost model: Cost = (STP_rate × auto_cost) + ((1-STP_rate) × manual_cost) + (error_rate × error_cost). Sweet spot: 0.88 threshold → 82% STP, 1.2% error rate.
+
+   (2) **Model accuracy improvements**: Each 1% improvement in NER accuracy → 3% improvement in STP rate. We invest in model retraining, more training data, better document-specific models.
+
+   (3) **Template matching**: For standardized documents (e.g., ADP pay stubs), use template matching (OCR + regex) which is 99% accurate. Boosts STP rate for these docs to 95%.
+
+   (4) **Pre-validation**: Before extraction, check document quality (resolution, blur, completeness). Reject poor-quality docs upfront, request re-upload. This prevents low-confidence extractions downstream.
+
+   (5) **Smart routing**: If document type is rare (e.g., foreign passport), route to manual review immediately. Don't waste time on uncertain auto-processing. Focus automation on high-volume docs (80/20 rule).
+
+   (6) **Customer education**: Guide customers to upload clear photos (in-app tips: 'Ensure all 4 corners visible', 'Avoid glare', 'Use flash if lighting is poor'). Better input → higher OCR accuracy → higher STP.
+
+   **Monitoring**:
+   - Daily dashboard: STP rate trend (last 30 days), STP rate by document type, manual review queue depth.
+   - Alerts: If STP rate drops below 75%, investigate (model degradation? New document format? Data quality issue?).
+   - A/B testing: Test new model versions in shadow mode, measure STP rate improvement before rollout."
+
+**Business Impact:**
+- **Cost reduction**: 90% (from $50 to $5 per application) = $450K/month savings
+- **Time reduction**: 88% (from 2-4 hours to 15 minutes) = Faster loan approvals, better customer experience
+- **Accuracy**: 95%+ extraction accuracy (vs 98% human accuracy, competitive)
+- **Scalability**: Process 10K → 100K applications/month with same team (10× scale)
+- **Compliance**: 100% documentation audit trail, zero ECOA violations
+
+---
+
 ## 💼 Databricks Value Propositions for Financial Services
 
 ### 1. **Unified Lakehouse = Single Source of Truth**
