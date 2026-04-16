@@ -1,0 +1,1418 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spec-Driven Development Framework | AI-Augmented Engineering</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary-blue: #1E3A8A;
+            --secondary-cyan: #06B6D4;
+            --accent-amber: #F59E0B;
+            --success-green: #10B981;
+            --danger-red: #EF4444;
+            --gray-50: #F9FAFB;
+            --gray-100: #F3F4F6;
+            --gray-200: #E5E7EB;
+            --gray-700: #374151;
+            --gray-900: #111827;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+            line-height: 1.6;
+            color: var(--gray-900);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Header */
+        header {
+            background: linear-gradient(135deg, var(--primary-blue) 0%, var(--secondary-cyan) 100%);
+            color: white;
+            padding: 3rem 2rem;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg width="100" height="100" xmlns="http://www.w3.org/2000/svg"><circle cx="50" cy="50" r="1" fill="white" opacity="0.1"/></svg>');
+            opacity: 0.3;
+        }
+
+        header h1 {
+            font-size: 3rem;
+            font-weight: 800;
+            margin-bottom: 0.5rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        header .subtitle {
+            font-size: 1.25rem;
+            opacity: 0.95;
+            font-weight: 300;
+            position: relative;
+            z-index: 1;
+        }
+
+        header .badge {
+            display: inline-block;
+            background: var(--accent-amber);
+            color: var(--gray-900);
+            padding: 0.5rem 1.5rem;
+            border-radius: 2rem;
+            font-weight: 600;
+            margin-top: 1rem;
+            font-size: 0.9rem;
+        }
+
+        /* Navigation */
+        nav {
+            background: var(--gray-900);
+            padding: 1rem 2rem;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        nav ul {
+            list-style: none;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 2rem;
+        }
+
+        nav a {
+            color: white;
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s;
+            font-size: 0.95rem;
+        }
+
+        nav a:hover {
+            color: var(--secondary-cyan);
+        }
+
+        /* Main Content */
+        main {
+            padding: 2rem;
+        }
+
+        section {
+            margin-bottom: 4rem;
+            scroll-margin-top: 100px;
+        }
+
+        h2 {
+            color: var(--primary-blue);
+            font-size: 2.5rem;
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 3px solid var(--secondary-cyan);
+        }
+
+        h3 {
+            color: var(--gray-900);
+            font-size: 1.75rem;
+            margin: 2rem 0 1rem;
+        }
+
+        h4 {
+            color: var(--gray-700);
+            font-size: 1.25rem;
+            margin: 1.5rem 0 0.75rem;
+        }
+
+        p {
+            margin-bottom: 1rem;
+            color: var(--gray-700);
+        }
+
+        /* Hero Section */
+        .hero {
+            background: linear-gradient(135deg, var(--gray-50) 0%, white 100%);
+            padding: 3rem;
+            border-radius: 1rem;
+            margin-bottom: 3rem;
+            border-left: 5px solid var(--primary-blue);
+        }
+
+        .hero-content {
+            font-size: 1.25rem;
+            color: var(--gray-700);
+            line-height: 1.8;
+        }
+
+        .hero-highlight {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary-blue);
+            margin: 1.5rem 0;
+        }
+
+        /* Statistics Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            margin: 2rem 0;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 2rem;
+            border-radius: 1rem;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            border-top: 4px solid var(--accent-amber);
+            text-align: center;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+        }
+
+        .stat-number {
+            font-size: 3rem;
+            font-weight: 800;
+            color: var(--accent-amber);
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            font-size: 1.1rem;
+            color: var(--gray-700);
+            font-weight: 600;
+        }
+
+        .stat-description {
+            font-size: 0.9rem;
+            color: var(--gray-700);
+            margin-top: 0.5rem;
+        }
+
+        /* Problem/Solution Cards */
+        .comparison-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin: 2rem 0;
+        }
+
+        .problem-card {
+            background: linear-gradient(135deg, #FEE2E2 0%, #FECACA 100%);
+            padding: 2rem;
+            border-radius: 1rem;
+            border-left: 5px solid var(--danger-red);
+        }
+
+        .solution-card {
+            background: linear-gradient(135deg, #D1FAE5 0%, #A7F3D0 100%);
+            padding: 2rem;
+            border-radius: 1rem;
+            border-left: 5px solid var(--success-green);
+        }
+
+        .card-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .card-title.problem {
+            color: var(--danger-red);
+        }
+
+        .card-title.solution {
+            color: var(--success-green);
+        }
+
+        /* 7 Dimensions Grid */
+        .dimensions-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin: 2rem 0;
+        }
+
+        .dimension-card {
+            background: white;
+            padding: 2rem;
+            border-radius: 1rem;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            border-top: 4px solid;
+            transition: all 0.3s;
+            position: relative;
+        }
+
+        .dimension-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+        }
+
+        .dimension-card.new::after {
+            content: 'NEW';
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: var(--accent-amber);
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: 1rem;
+            font-size: 0.75rem;
+            font-weight: 700;
+        }
+
+        .dimension-number {
+            display: inline-block;
+            width: 2.5rem;
+            height: 2.5rem;
+            border-radius: 50%;
+            background: var(--gray-100);
+            text-align: center;
+            line-height: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            font-size: 1.25rem;
+        }
+
+        .dimension-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .dimension-subtitle {
+            font-size: 0.9rem;
+            color: var(--gray-700);
+            margin-bottom: 1rem;
+        }
+
+        .dimension-list {
+            list-style: none;
+            margin-top: 1rem;
+        }
+
+        .dimension-list li {
+            padding: 0.5rem 0;
+            padding-left: 1.5rem;
+            position: relative;
+            color: var(--gray-700);
+        }
+
+        .dimension-list li::before {
+            content: '✓';
+            position: absolute;
+            left: 0;
+            font-weight: 700;
+        }
+
+        /* ROI Section */
+        .roi-showcase {
+            background: linear-gradient(135deg, #FEF3C7 0%, #FDE68A 100%);
+            padding: 3rem;
+            border-radius: 1rem;
+            margin: 2rem 0;
+            text-align: center;
+        }
+
+        .roi-main {
+            font-size: 4rem;
+            font-weight: 800;
+            color: var(--accent-amber);
+            margin-bottom: 1rem;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .roi-description {
+            font-size: 1.5rem;
+            color: var(--gray-900);
+            font-weight: 600;
+        }
+
+        .roi-breakdown {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .roi-item {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 0.5rem;
+        }
+
+        .roi-item-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--primary-blue);
+        }
+
+        .roi-item-label {
+            font-size: 0.9rem;
+            color: var(--gray-700);
+            margin-top: 0.5rem;
+        }
+
+        /* Timeline */
+        .timeline {
+            position: relative;
+            padding: 2rem 0;
+        }
+
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 4px;
+            height: 100%;
+            background: var(--gray-200);
+        }
+
+        .timeline-item {
+            display: flex;
+            margin-bottom: 2rem;
+            position: relative;
+        }
+
+        .timeline-item:nth-child(odd) {
+            flex-direction: row-reverse;
+        }
+
+        .timeline-content {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 1rem;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            width: 45%;
+            border-left: 4px solid var(--secondary-cyan);
+        }
+
+        .timeline-item:nth-child(odd) .timeline-content {
+            border-left: none;
+            border-right: 4px solid var(--secondary-cyan);
+        }
+
+        .timeline-marker {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 2rem;
+            height: 2rem;
+            border-radius: 50%;
+            background: var(--secondary-cyan);
+            border: 4px solid white;
+            box-shadow: 0 0 0 4px var(--gray-200);
+        }
+
+        /* Lists */
+        ul, ol {
+            margin: 1rem 0;
+            padding-left: 2rem;
+        }
+
+        li {
+            margin-bottom: 0.5rem;
+            color: var(--gray-700);
+        }
+
+        /* Code Blocks */
+        code {
+            background: var(--gray-100);
+            padding: 0.2rem 0.5rem;
+            border-radius: 0.25rem;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+            color: var(--danger-red);
+        }
+
+        pre {
+            background: var(--gray-900);
+            color: var(--success-green);
+            padding: 1.5rem;
+            border-radius: 0.5rem;
+            overflow-x: auto;
+            margin: 1rem 0;
+        }
+
+        pre code {
+            background: none;
+            color: var(--success-green);
+            padding: 0;
+        }
+
+        /* Tables */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 2rem 0;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        th {
+            background: var(--primary-blue);
+            color: white;
+            padding: 1rem;
+            text-align: left;
+            font-weight: 600;
+        }
+
+        td {
+            padding: 1rem;
+            border-bottom: 1px solid var(--gray-200);
+        }
+
+        tr:hover {
+            background: var(--gray-50);
+        }
+
+        /* Buttons */
+        .button-group {
+            display: flex;
+            gap: 1rem;
+            margin: 2rem 0;
+            flex-wrap: wrap;
+        }
+
+        .button {
+            padding: 1rem 2rem;
+            border-radius: 0.5rem;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s;
+            display: inline-block;
+        }
+
+        .button-primary {
+            background: var(--primary-blue);
+            color: white;
+        }
+
+        .button-primary:hover {
+            background: var(--secondary-cyan);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        .button-secondary {
+            background: white;
+            color: var(--primary-blue);
+            border: 2px solid var(--primary-blue);
+        }
+
+        .button-secondary:hover {
+            background: var(--primary-blue);
+            color: white;
+        }
+
+        /* Alerts */
+        .alert {
+            padding: 1.5rem;
+            border-radius: 0.5rem;
+            margin: 1rem 0;
+            border-left: 5px solid;
+        }
+
+        .alert-success {
+            background: #D1FAE5;
+            border-color: var(--success-green);
+            color: #065F46;
+        }
+
+        .alert-warning {
+            background: #FEF3C7;
+            border-color: var(--accent-amber);
+            color: #92400E;
+        }
+
+        .alert-danger {
+            background: #FEE2E2;
+            border-color: var(--danger-red);
+            color: #991B1B;
+        }
+
+        .alert-info {
+            background: #DBEAFE;
+            border-color: var(--secondary-cyan);
+            color: #1E40AF;
+        }
+
+        /* Collapsible */
+        details {
+            background: white;
+            border: 1px solid var(--gray-200);
+            border-radius: 0.5rem;
+            padding: 1rem;
+            margin: 1rem 0;
+        }
+
+        summary {
+            cursor: pointer;
+            font-weight: 600;
+            color: var(--primary-blue);
+            user-select: none;
+        }
+
+        summary:hover {
+            color: var(--secondary-cyan);
+        }
+
+        /* Footer */
+        footer {
+            background: var(--gray-900);
+            color: white;
+            padding: 3rem 2rem;
+            text-align: center;
+        }
+
+        footer a {
+            color: var(--secondary-cyan);
+            text-decoration: none;
+        }
+
+        footer a:hover {
+            text-decoration: underline;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            header h1 {
+                font-size: 2rem;
+            }
+
+            .comparison-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .timeline::before {
+                left: 2rem;
+            }
+
+            .timeline-content {
+                width: calc(100% - 4rem);
+                margin-left: 4rem;
+            }
+
+            .timeline-item:nth-child(odd) .timeline-content {
+                margin-left: 4rem;
+            }
+
+            .timeline-marker {
+                left: 2rem;
+            }
+
+            nav ul {
+                flex-direction: column;
+                gap: 1rem;
+            }
+        }
+
+        /* Print Styles */
+        @media print {
+            body {
+                background: white;
+            }
+
+            nav {
+                display: none;
+            }
+
+            .container {
+                box-shadow: none;
+            }
+
+            section {
+                page-break-inside: avoid;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Spec-Driven Development Framework</h1>
+            <p class="subtitle">A Comprehensive Framework for AI-Augmented Software Engineering</p>
+            <span class="badge">Version 1.0 | April 2026</span>
+        </header>
+
+        <nav>
+            <ul>
+                <li><a href="#overview">Overview</a></li>
+                <li><a href="#problem">The Problem</a></li>
+                <li><a href="#framework">7 Dimensions</a></li>
+                <li><a href="#roi">ROI Analysis</a></li>
+                <li><a href="#implementation">Implementation</a></li>
+                <li><a href="#metrics">Success Metrics</a></li>
+                <li><a href="#roadmap">Roadmap</a></li>
+            </ul>
+        </nav>
+
+        <main>
+            <!-- Overview Section -->
+            <section id="overview">
+                <div class="hero">
+                    <div class="hero-content">
+                        <p class="hero-highlight">In the AI era, the specification is the asset, not the code.</p>
+                        <p>Spec-Driven Development (SDD) represents a fundamental paradigm shift where specifications become executable contracts, and code becomes a regenerable artifact. This framework synthesizes industry best practices with novel dimensions to create a comprehensive approach for organizations transitioning to AI-augmented development.</p>
+                        <p><strong>Key Insight:</strong> When code regeneration costs approach zero, the economics of software development change completely. The feedback loop compresses from months to minutes, making specifications the primary engineering deliverable.</p>
+                    </div>
+                </div>
+
+                <h2>Strategic Imperative</h2>
+                <p>When AI can regenerate production-quality code in minutes, your organization's intellectual property shifts from implementation to specification. Companies that master specification-driven development will achieve:</p>
+
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-number">10x</div>
+                        <div class="stat-label">Faster Iteration</div>
+                        <div class="stat-description">Minutes vs. weeks for code changes</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">50%</div>
+                        <div class="stat-label">Fewer Defects</div>
+                        <div class="stat-description">AI generates from complete specs</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">90%</div>
+                        <div class="stat-label">Auto Regeneration</div>
+                        <div class="stat-description">When requirements change</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">60%</div>
+                        <div class="stat-label">Faster Onboarding</div>
+                        <div class="stat-description">Specs as living documentation</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Problem/Solution Section -->
+            <section id="problem">
+                <h2>The Problem We're Solving</h2>
+
+                <div class="comparison-grid">
+                    <div class="problem-card">
+                        <h3 class="card-title problem">❌ "Vibe Coding" with AI</h3>
+                        <p><strong>How Teams Work Today:</strong></p>
+                        <ol>
+                            <li>Chat with AI in informal conversations</li>
+                            <li>AI fills unstated assumptions with plausible guesses</li>
+                            <li>Code compiles and passes basic tests</li>
+                            <li><strong>Silent failures appear in production</strong></li>
+                        </ol>
+                        <p style="margin-top: 1rem;"><strong>The Root Cause:</strong> AI doesn't leave gaps empty—it fills them with wrong answers that look right.</p>
+
+                        <div style="margin-top: 1.5rem;">
+                            <h4 style="color: var(--danger-red); font-size: 1.1rem;">Business Impact:</h4>
+                            <ul>
+                                <li><strong>Technical Debt Accumulation</strong>: Inconsistent implementations</li>
+                                <li><strong>Production Incidents</strong>: 15+ bugs/quarter traced to missing specs</li>
+                                <li><strong>Rework Waste</strong>: 30-40% of time spent fixing AI code</li>
+                                <li><strong>Knowledge Lock-In</strong>: Tribal knowledge, hard to onboard</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="solution-card">
+                        <h3 class="card-title solution">✅ Spec-Driven Development</h3>
+                        <p><strong>The Framework Approach:</strong></p>
+                        <ol>
+                            <li>Write complete specifications (1-hour sprint method)</li>
+                            <li>Validate completeness before coding</li>
+                            <li>Load specs into AI context</li>
+                            <li><strong>Generate verified, production-ready code</strong></li>
+                        </ol>
+                        <p style="margin-top: 1rem;"><strong>Core Principle:</strong> Specifications = Asset | Code = Regenerable Output</p>
+
+                        <div style="margin-top: 1.5rem;">
+                            <h4 style="color: var(--success-green); font-size: 1.1rem;">Key Features:</h4>
+                            <ul>
+                                <li><strong>1-Hour Sprint</strong>: 80% complete in 60 minutes</li>
+                                <li><strong>AI Code Review Checklist</strong>: Automated validation</li>
+                                <li><strong>Living Documentation</strong>: Specs evolve with code</li>
+                                <li><strong>Machine-Readable</strong>: EARS notation, OpenAPI contracts</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 7 Dimensions Framework -->
+            <section id="framework">
+                <h2>The 7-Dimensional Framework</h2>
+                <p>This framework extends beyond existing models (ZeeSpec's 5W1H, GitHub Spec Kit) with three novel dimensions critical for enterprise adoption:</p>
+
+                <div class="dimensions-grid">
+                    <div class="dimension-card" style="border-top-color: #8B5CF6;">
+                        <div class="dimension-number" style="background: #EDE9FE; color: #8B5CF6;">1</div>
+                        <div class="dimension-title" style="color: #8B5CF6;">INTENT Layer</div>
+                        <div class="dimension-subtitle">Why + Who</div>
+                        <p>Define business value, user context, and decision rationale.</p>
+                        <ul class="dimension-list" style="--list-color: #8B5CF6;">
+                            <li>Business Objectives</li>
+                            <li>User Personas & Jobs-to-be-Done</li>
+                            <li>Success Metrics</li>
+                            <li>Decision Log</li>
+                        </ul>
+                    </div>
+
+                    <div class="dimension-card" style="border-top-color: #3B82F6;">
+                        <div class="dimension-number" style="background: #DBEAFE; color: #3B82F6;">2</div>
+                        <div class="dimension-title" style="color: #3B82F6;">BEHAVIORAL Layer</div>
+                        <div class="dimension-subtitle">What + When</div>
+                        <p>Define system behavior, use cases, and interaction patterns.</p>
+                        <ul class="dimension-list">
+                            <li>Functional Requirements (EARS notation)</li>
+                            <li>Use Cases & User Flows</li>
+                            <li>State Machines</li>
+                            <li>Edge Cases & Error Scenarios</li>
+                        </ul>
+                    </div>
+
+                    <div class="dimension-card" style="border-top-color: #10B981;">
+                        <div class="dimension-number" style="background: #D1FAE5; color: #10B981;">3</div>
+                        <div class="dimension-title" style="color: #10B981;">STRUCTURAL Layer</div>
+                        <div class="dimension-subtitle">Where + How</div>
+                        <p>Define architecture, data models, and technical implementation.</p>
+                        <ul class="dimension-list">
+                            <li>System Architecture (C4 diagrams)</li>
+                            <li>Data Models & Schemas</li>
+                            <li>API Contracts (OpenAPI, GraphQL)</li>
+                            <li>Technology Stack & Dependencies</li>
+                        </ul>
+                    </div>
+
+                    <div class="dimension-card new" style="border-top-color: #F59E0B;">
+                        <div class="dimension-number" style="background: #FEF3C7; color: #F59E0B;">4</div>
+                        <div class="dimension-title" style="color: #F59E0B;">QUALITY Layer</div>
+                        <div class="dimension-subtitle">How Well</div>
+                        <p>Define non-functional requirements and quality attributes.</p>
+                        <ul class="dimension-list">
+                            <li>Performance Requirements</li>
+                            <li>Security Constraints (OWASP Top 10)</li>
+                            <li>Scalability Targets</li>
+                            <li>Testing Strategy (>80% coverage)</li>
+                        </ul>
+                    </div>
+
+                    <div class="dimension-card new" style="border-top-color: #EF4444;">
+                        <div class="dimension-number" style="background: #FEE2E2; color: #EF4444;">5</div>
+                        <div class="dimension-title" style="color: #EF4444;">CONSTRAINTS Layer</div>
+                        <div class="dimension-subtitle">Guardrails</div>
+                        <p>Define boundaries, limitations, and non-negotiable constraints.</p>
+                        <ul class="dimension-list">
+                            <li>Technical Constraints</li>
+                            <li>Regulatory/Compliance (GDPR, HIPAA)</li>
+                            <li>Budget & Resource Limits</li>
+                            <li>Anti-Patterns (what NOT to do)</li>
+                        </ul>
+                    </div>
+
+                    <div class="dimension-card" style="border-top-color: #06B6D4;">
+                        <div class="dimension-number" style="background: #CFFAFE; color: #06B6D4;">6</div>
+                        <div class="dimension-title" style="color: #06B6D4;">EVOLUTION Layer</div>
+                        <div class="dimension-subtitle">Change Management</div>
+                        <p>Manage specification versioning, migration, and technical debt.</p>
+                        <ul class="dimension-list">
+                            <li>Version History (Semantic Versioning)</li>
+                            <li>Migration Paths</li>
+                            <li>Deprecation Schedule</li>
+                            <li>Technical Debt Register</li>
+                        </ul>
+                    </div>
+
+                    <div class="dimension-card new" style="border-top-color: #EC4899;">
+                        <div class="dimension-number" style="background: #FCE7F3; color: #EC4899;">7</div>
+                        <div class="dimension-title" style="color: #EC4899;">VALIDATION Layer</div>
+                        <div class="dimension-subtitle">Verification & Testing</div>
+                        <p>Define how specifications are validated and code verified.</p>
+                        <ul class="dimension-list">
+                            <li>Acceptance Tests (Gherkin)</li>
+                            <li>Contract Tests (Pact)</li>
+                            <li>Property-Based Tests</li>
+                            <li>AI Code Review Checklist</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="alert alert-info">
+                    <strong>Novel Contributions:</strong> Dimensions 4 (Quality), 5 (Constraints), and 7 (Validation) are unique additions beyond existing frameworks like ZeeSpec and GitHub Spec Kit. These dimensions prevent AI from generating fast-but-insecure code, explicitly prevent known failure modes, and enable continuous verification.
+                </div>
+            </section>
+
+            <!-- ROI Section -->
+            <section id="roi">
+                <h2>Expected ROI Analysis</h2>
+
+                <div class="roi-showcase">
+                    <div class="roi-main">823%</div>
+                    <div class="roi-description">Return on Investment in Year 1</div>
+                    <p style="margin-top: 1rem; color: var(--gray-900); font-size: 1.1rem;">
+                        <strong>Investment:</strong> $650K | <strong>Return:</strong> $6M Annual Value
+                    </p>
+
+                    <div class="roi-breakdown">
+                        <div class="roi-item">
+                            <div class="roi-item-value">$2.5M</div>
+                            <div class="roi-item-label">50% Faster Development<br>10,000 engineering hours saved</div>
+                        </div>
+                        <div class="roi-item">
+                            <div class="roi-item-value">$2M</div>
+                            <div class="roi-item-label">70% Fewer Defects<br>Reduced production incidents</div>
+                        </div>
+                        <div class="roi-item">
+                            <div class="roi-item-value">$500K</div>
+                            <div class="roi-item-label">60% Faster Onboarding<br>3 months → 6 weeks productivity</div>
+                        </div>
+                        <div class="roi-item">
+                            <div class="roi-item-value">$1M</div>
+                            <div class="roi-item-label">90% Auto Refactoring<br>2 weeks → 2 hours regeneration</div>
+                        </div>
+                    </div>
+                </div>
+
+                <h3>Investment Breakdown</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Category</th>
+                            <th>Investment</th>
+                            <th>Details</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Tools & Infrastructure</td>
+                            <td>$50K</td>
+                            <td>AI assistants, spec platforms, testing tools</td>
+                        </tr>
+                        <tr>
+                            <td>Training & Enablement</td>
+                            <td>$100K</td>
+                            <td>50 engineers @ $2K framework training</td>
+                        </tr>
+                        <tr>
+                            <td>Process & Governance</td>
+                            <td>$50K</td>
+                            <td>Review board, templates, documentation</td>
+                        </tr>
+                        <tr>
+                            <td>Pilot Project</td>
+                            <td>$50K</td>
+                            <td>1 team × 2 months dedicated time</td>
+                        </tr>
+                        <tr>
+                            <td>Rollout Support</td>
+                            <td>$400K</td>
+                            <td>50 teams × 1 week adoption @ $8K</td>
+                        </tr>
+                        <tr style="background: var(--gray-100); font-weight: 700;">
+                            <td>Total Year 1</td>
+                            <td>$650K</td>
+                            <td>Complete organization-wide rollout</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </section>
+
+            <!-- Implementation Roadmap -->
+            <section id="implementation">
+                <h2>Implementation Roadmap</h2>
+
+                <div class="timeline">
+                    <div class="timeline-item">
+                        <div class="timeline-marker"></div>
+                        <div class="timeline-content">
+                            <h3>Phase 1: Pilot (Months 1-2)</h3>
+                            <ul>
+                                <li><strong>Investment:</strong> $50K (1 team, 1 greenfield project)</li>
+                                <li><strong>Training:</strong> 1 week (framework + tools)</li>
+                                <li><strong>Deliverable:</strong> Complete spec + working implementation</li>
+                                <li><strong>Success Metric:</strong> 80% first-gen success rate</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="timeline-item">
+                        <div class="timeline-marker"></div>
+                        <div class="timeline-content">
+                            <h3>Phase 2: Early Adoption (Months 3-4)</h3>
+                            <ul>
+                                <li><strong>Scale:</strong> 2-3 teams</li>
+                                <li><strong>Focus:</strong> Refine templates, build examples</li>
+                                <li><strong>Deliverable:</strong> Internal best practices guide</li>
+                                <li><strong>Cost:</strong> $100K</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="timeline-item">
+                        <div class="timeline-marker"></div>
+                        <div class="timeline-content">
+                            <h3>Phase 3: Organization Rollout (Months 5-12)</h3>
+                            <ul>
+                                <li><strong>Scale:</strong> Organization-wide (50+ teams)</li>
+                                <li><strong>Integration:</strong> SDLC, CI/CD, governance</li>
+                                <li><strong>Deliverable:</strong> Measurable ROI, sustained adoption</li>
+                                <li><strong>Cost:</strong> $500K (training, tools, process)</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <h3>The "1-Hour Sprint" Method</h3>
+                <p>Capture 80% of critical decisions in 60 minutes using structured templates:</p>
+
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Time</th>
+                            <th>Activity</th>
+                            <th>Output</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>0-10 min</td>
+                            <td>Intent Layer</td>
+                            <td>Why, Who, Success Metrics</td>
+                        </tr>
+                        <tr>
+                            <td>10-30 min</td>
+                            <td>Behavioral Layer</td>
+                            <td>What, Use Cases, EARS Requirements</td>
+                        </tr>
+                        <tr>
+                            <td>30-45 min</td>
+                            <td>Structural Layer</td>
+                            <td>Architecture, Data Model, APIs</td>
+                        </tr>
+                        <tr>
+                            <td>45-55 min</td>
+                            <td>Quality + Constraints</td>
+                            <td>NFRs, Guardrails, Anti-patterns</td>
+                        </tr>
+                        <tr>
+                            <td>55-60 min</td>
+                            <td>Validation Layer</td>
+                            <td>Key Acceptance Tests</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="alert alert-success">
+                    <strong>Quick Win Timeline:</strong> From spec writing to production deployment in 6 weeks. Week 1: Setup & Training | Week 2: First Spec | Weeks 3-4: AI Implementation | Week 5: Validation | Week 6: Go/No-Go Decision
+                </div>
+            </section>
+
+            <!-- Success Metrics -->
+            <section id="metrics">
+                <h2>Success Metrics & KPIs</h2>
+
+                <h3>Leading Indicators (Track Monthly)</h3>
+                <div class="stats-grid">
+                    <div class="stat-card" style="border-top-color: var(--success-green);">
+                        <div class="stat-label">Specification Completeness</div>
+                        <div class="stat-number" style="font-size: 2.5rem; color: var(--success-green);">&gt;90%</div>
+                        <div class="stat-description">All 7 dimensions addressed</div>
+                    </div>
+                    <div class="stat-card" style="border-top-color: var(--primary-blue);">
+                        <div class="stat-label">First-Gen Success Rate</div>
+                        <div class="stat-number" style="font-size: 2.5rem; color: var(--primary-blue);">&gt;80%</div>
+                        <div class="stat-description">AI code works without rework</div>
+                    </div>
+                    <div class="stat-card" style="border-top-color: var(--secondary-cyan);">
+                        <div class="stat-label">Assumption Gaps</div>
+                        <div class="stat-number" style="font-size: 2.5rem; color: var(--secondary-cyan);">&lt;5</div>
+                        <div class="stat-description">Per feature discovered during implementation</div>
+                    </div>
+                    <div class="stat-card" style="border-top-color: var(--accent-amber);">
+                        <div class="stat-label">Spec Linting Pass Rate</div>
+                        <div class="stat-number" style="font-size: 2.5rem; color: var(--accent-amber);">100%</div>
+                        <div class="stat-description">Automated completeness checks</div>
+                    </div>
+                </div>
+
+                <h3>Lagging Indicators (Track Quarterly)</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Metric</th>
+                            <th>Baseline</th>
+                            <th>Target</th>
+                            <th>Impact</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Production Defect Rate</td>
+                            <td>15/quarter</td>
+                            <td>5/quarter</td>
+                            <td>70% reduction</td>
+                        </tr>
+                        <tr>
+                            <td>Time to Market</td>
+                            <td>40 hours/feature</td>
+                            <td>20 hours/feature</td>
+                            <td>50% faster delivery</td>
+                        </tr>
+                        <tr>
+                            <td>Engineer Onboarding</td>
+                            <td>3 months</td>
+                            <td>6 weeks</td>
+                            <td>60% acceleration</td>
+                        </tr>
+                        <tr>
+                            <td>Code Regeneration Success</td>
+                            <td>N/A</td>
+                            <td>90%</td>
+                            <td>When requirements change</td>
+                        </tr>
+                        <tr>
+                            <td>Engineering Satisfaction</td>
+                            <td>Baseline survey</td>
+                            <td>&gt;7/10</td>
+                            <td>Developer experience</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <h3>Governance Roles</h3>
+                <details>
+                    <summary><strong>Specification Review Board</strong></summary>
+                    <ul>
+                        <li><strong>Members:</strong> Principal Engineers, Tech Leads, Product Leaders</li>
+                        <li><strong>Frequency:</strong> Weekly meetings</li>
+                        <li><strong>Mandate:</strong> Approve high-risk specs, maintain standards</li>
+                        <li><strong>Authority:</strong> Go/no-go for implementation</li>
+                    </ul>
+                </details>
+
+                <details>
+                    <summary><strong>Specification Champions Network</strong></summary>
+                    <ul>
+                        <li><strong>Size:</strong> One per team</li>
+                        <li><strong>Training:</strong> 2-day intensive workshop</li>
+                        <li><strong>Responsibility:</strong> Local evangelism, template improvements</li>
+                        <li><strong>Time Commitment:</strong> 4 hours/week</li>
+                    </ul>
+                </details>
+
+                <details>
+                    <summary><strong>Executive Sponsor</strong></summary>
+                    <ul>
+                        <li><strong>Role:</strong> Remove organizational blockers</li>
+                        <li><strong>Commitment:</strong> Monthly review of metrics</li>
+                        <li><strong>Authority:</strong> Allocate budget, mandate adoption</li>
+                    </ul>
+                </details>
+            </section>
+
+            <!-- Adoption Roadmap -->
+            <section id="roadmap">
+                <h2>Adoption Roadmap</h2>
+
+                <h3>Months 1-2: Foundation</h3>
+                <ul>
+                    <li>Select pilot team and project (greenfield preferred)</li>
+                    <li>Create 7-dimension templates customized to tech stack</li>
+                    <li>Train team on specification writing (2-day workshop)</li>
+                    <li>Set up toolchain (VS Code, Mermaid, AI assistants)</li>
+                </ul>
+
+                <h3>Months 3-4: Pilot Execution</h3>
+                <ul>
+                    <li>Write first complete specification using framework</li>
+                    <li>Generate code using AI assistants (Claude Code, Cursor)</li>
+                    <li>Measure baseline metrics (completeness, first-gen success rate)</li>
+                    <li>Collect team feedback and iterate templates</li>
+                </ul>
+
+                <h3>Months 5-6: Iteration & Scaling</h3>
+                <ul>
+                    <li>Refine templates based on learnings</li>
+                    <li>Apply to 2-3 additional projects</li>
+                    <li>Develop custom linting rules for your domain</li>
+                    <li>Create internal best practices guide</li>
+                </ul>
+
+                <h3>Months 7-12: Organization-Wide Rollout</h3>
+                <ul>
+                    <li>Establish governance model (Review Board, Champions Network)</li>
+                    <li>Train all engineering teams (50+ engineers)</li>
+                    <li>Integrate into SDLC and CI/CD pipelines</li>
+                    <li>Measure ROI and communicate wins to organization</li>
+                </ul>
+
+                <h3>Anti-Patterns to Avoid</h3>
+                <div class="comparison-grid">
+                    <div class="alert alert-danger">
+                        <h4 style="color: var(--danger-red); margin-bottom: 0.5rem;">❌ Common Pitfalls</h4>
+                        <ul style="margin-top: 0.5rem;">
+                            <li><strong>Waterfall Resurrection:</strong> Treating specs as frozen, months-long documents</li>
+                            <li><strong>Specification Bloat:</strong> Over-documenting beyond AI context window</li>
+                            <li><strong>Code-First Mindset:</strong> Writing code then reverse-engineering specs</li>
+                            <li><strong>AI Overconfidence:</strong> Trusting generated code without validation</li>
+                        </ul>
+                    </div>
+
+                    <div class="alert alert-success">
+                        <h4 style="color: var(--success-green); margin-bottom: 0.5rem;">✅ Best Practices</h4>
+                        <ul style="margin-top: 0.5rem;">
+                            <li><strong>Living Documents:</strong> Specs evolve with minute-level feedback loops</li>
+                            <li><strong>Focused Specs:</strong> Split large systems into bounded contexts</li>
+                            <li><strong>Spec-First Culture:</strong> Code without approved spec is rejected</li>
+                            <li><strong>Trust but Verify:</strong> Use AI Code Review Checklist religiously</li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Competitive Landscape -->
+            <section>
+                <h2>Competitive Landscape (2026)</h2>
+
+                <div class="alert alert-info">
+                    <h4>Industry Convergence Signal</h4>
+                    <p><strong>Major Players Adopting SDD:</strong></p>
+                    <ul>
+                        <li><strong>GitHub:</strong> Spec Kit (84,000+ stars, 14+ AI platforms)</li>
+                        <li><strong>AWS:</strong> Kiro for spec-to-infrastructure workflows</li>
+                        <li><strong>Thoughtworks:</strong> Identified SDD as key 2025 engineering practice</li>
+                        <li><strong>OpenSpec:</strong> Supports 20+ mainstream AI coding assistants</li>
+                    </ul>
+                    <p style="margin-top: 1rem;"><strong>Market Signal:</strong> The entire industry is converging on spec-driven development. Early adopters will have 12-18 month competitive advantage.</p>
+                </div>
+
+                <h3>Competitive Advantage Matrix</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Capability</th>
+                            <th>Companies with SDD</th>
+                            <th>Companies without SDD</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Feature Delivery Speed</td>
+                            <td style="background: #D1FAE5; color: #065F46; font-weight: 700;">10x faster than baseline</td>
+                            <td style="background: #FEE2E2; color: #991B1B;">Slowing velocity due to tech debt</td>
+                        </tr>
+                        <tr>
+                            <td>Engineer Onboarding</td>
+                            <td style="background: #D1FAE5; color: #065F46; font-weight: 700;">60% faster (6 weeks)</td>
+                            <td style="background: #FEE2E2; color: #991B1B;">3 months with tribal knowledge</td>
+                        </tr>
+                        <tr>
+                            <td>Requirement Pivots</td>
+                            <td style="background: #D1FAE5; color: #065F46; font-weight: 700;">Hours to regenerate code</td>
+                            <td style="background: #FEE2E2; color: #991B1B;">Weeks of manual rework</td>
+                        </tr>
+                        <tr>
+                            <td>Quality Consistency</td>
+                            <td style="background: #D1FAE5; color: #065F46; font-weight: 700;">Maintained at scale</td>
+                            <td style="background: #FEE2E2; color: #991B1B;">AI-generated inconsistencies</td>
+                        </tr>
+                        <tr>
+                            <td>Talent Retention</td>
+                            <td style="background: #D1FAE5; color: #065F46; font-weight: 700;">AI-native workflow attracts top talent</td>
+                            <td style="background: #FEE2E2; color: #991B1B;">Losing engineers to modern orgs</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </section>
+
+            <!-- Call to Action -->
+            <section>
+                <h2>Next Steps & Call to Action</h2>
+
+                <div class="hero" style="background: linear-gradient(135deg, var(--primary-blue) 0%, var(--secondary-cyan) 100%); color: white;">
+                    <h3 style="color: white; font-size: 2rem; margin-bottom: 1rem;">Timeline to First Results: 6 Weeks</h3>
+                    <ul style="font-size: 1.1rem; line-height: 2;">
+                        <li><strong>Week 1:</strong> Training and setup</li>
+                        <li><strong>Week 2:</strong> First specification (1-hour sprint + refinement)</li>
+                        <li><strong>Weeks 3-4:</strong> AI-driven implementation</li>
+                        <li><strong>Week 5:</strong> Validation and testing</li>
+                        <li><strong>Week 6:</strong> Results presentation and go/no-go decision</li>
+                    </ul>
+                </div>
+
+                <h3>For Executive Sponsors</h3>
+                <ol>
+                    <li>Review framework document and ROI analysis</li>
+                    <li>Approve pilot budget ($50K)</li>
+                    <li>Identify executive champion</li>
+                    <li>Set first review meeting (6 weeks out)</li>
+                </ol>
+
+                <h3>For Engineering Leadership</h3>
+                <ol>
+                    <li>Select pilot team and greenfield project</li>
+                    <li>Allocate 1 week for framework training</li>
+                    <li>Set baseline metrics (current time-to-market, defect rate)</li>
+                    <li>Define success criteria for pilot</li>
+                </ol>
+
+                <h3>For Product Leadership</h3>
+                <ol>
+                    <li>Identify feature for pilot (clear requirements)</li>
+                    <li>Commit product owner time for specifications</li>
+                    <li>Align on business metrics and success criteria</li>
+                    <li>Prepare to evangelize wins across organization</li>
+                </ol>
+
+                <div class="alert alert-warning">
+                    <h4>Decision Framework</h4>
+                    <p><strong>Go Criteria:</strong></p>
+                    <ul>
+                        <li>✅ Engineering leadership committed</li>
+                        <li>✅ Pilot team identified and available</li>
+                        <li>✅ Budget approved</li>
+                        <li>✅ Success metrics defined</li>
+                        <li>✅ Executive sponsor assigned</li>
+                    </ul>
+                    <p style="margin-top: 1rem;"><strong>No-Go Criteria:</strong></p>
+                    <ul>
+                        <li>❌ Organization in crisis mode</li>
+                        <li>❌ Major platform migration underway</li>
+                        <li>❌ Engineering turnover >20%</li>
+                        <li>❌ Unable to allocate pilot team</li>
+                    </ul>
+                </div>
+
+                <div class="button-group">
+                    <a href="#overview" class="button button-primary">Review Framework</a>
+                    <a href="#roi" class="button button-secondary">See ROI Details</a>
+                </div>
+            </section>
+
+            <!-- Conclusion -->
+            <section>
+                <h2>Conclusion</h2>
+                <div class="hero">
+                    <p class="hero-highlight">The shift to AI-augmented development is inevitable. The question is not whether to adopt spec-driven development, but how quickly.</p>
+                    <p>Organizations that treat specifications as executable contracts will unlock the full potential of AI coding assistants. Those that continue with informal "vibe coding" will accumulate technical debt and lose competitive advantage.</p>
+                    <p><strong>This framework provides the structured approach to make specifications the strategic asset they deserve to be.</strong></p>
+                </div>
+
+                <div class="stats-grid">
+                    <div class="stat-card" style="border-top-color: var(--accent-amber);">
+                        <div class="stat-number" style="font-size: 2rem;">$650K</div>
+                        <div class="stat-label">Investment Required</div>
+                    </div>
+                    <div class="stat-card" style="border-top-color: var(--success-green);">
+                        <div class="stat-number" style="font-size: 2rem;">$6M</div>
+                        <div class="stat-label">Annual Return</div>
+                    </div>
+                    <div class="stat-card" style="border-top-color: var(--primary-blue);">
+                        <div class="stat-number" style="font-size: 2rem;">6 weeks</div>
+                        <div class="stat-label">Time to First Results</div>
+                    </div>
+                    <div class="stat-card" style="border-top-color: var(--secondary-cyan);">
+                        <div class="stat-number" style="font-size: 2rem;">12-18mo</div>
+                        <div class="stat-label">Competitive Advantage</div>
+                    </div>
+                </div>
+
+                <h3>The Specification as Capital Asset</h3>
+                <p>In 2026, the software industry has recognized a fundamental truth: <strong>code is ephemeral, specifications are enduring.</strong></p>
+                <p>When code can be regenerated in minutes, the organization's intellectual property shifts from implementation to specification. A well-crafted specification using this 7-dimensional framework becomes:</p>
+                <ol>
+                    <li><strong>Executable Contract:</strong> Machine-readable, AI-enforceable</li>
+                    <li><strong>Knowledge Repository:</strong> Captures why decisions were made</li>
+                    <li><strong>Quality Assurance:</strong> Automated validation prevents defects</li>
+                    <li><strong>Onboarding Tool:</strong> New team members understand system intent</li>
+                    <li><strong>Regeneration Blueprint:</strong> Enables effortless refactoring</li>
+                </ol>
+
+                <p style="font-size: 1.25rem; font-weight: 600; color: var(--primary-blue); margin-top: 2rem; text-align: center;">
+                    The competitive advantage in the AI era belongs to teams that write specifications as precisely as they once wrote code.
+                </p>
+            </section>
+        </main>
+
+        <footer>
+            <p><strong>Spec-Driven Development Framework</strong></p>
+            <p>Version 1.0 | April 2026 | Ready for Pilot Implementation</p>
+            <p style="margin-top: 1rem;">
+                Framework synthesizes research from:
+                <a href="https://dev.to/vishalmysore/why-i-created-zeespec-spec-driven-development-for-the-ai-era-3326">ZeeSpec</a>,
+                <a href="https://github.blog/ai-and-ml/generative-ai/spec-driven-development-using-markdown-as-a-programming-language-when-building-with-ai/">GitHub</a>,
+                <a href="https://thoughtworks.medium.com/spec-driven-development-d85995a81387">Thoughtworks</a>,
+                and the broader AI coding community.
+            </p>
+            <p style="margin-top: 1rem; font-size: 0.9rem; opacity: 0.8;">
+                Open source under MIT License. Use, modify, and distribute freely.
+            </p>
+        </footer>
+    </div>
+
+    <script>
+        // Smooth scrolling for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+
+        // Highlight active nav link on scroll
+        const sections = document.querySelectorAll('section[id]');
+        const navLinks = document.querySelectorAll('nav a');
+
+        window.addEventListener('scroll', () => {
+            let current = '';
+            sections.forEach(section => {
+                const sectionTop = section.offsetTop;
+                const sectionHeight = section.clientHeight;
+                if (pageYOffset >= (sectionTop - 200)) {
+                    current = section.getAttribute('id');
+                }
+            });
+
+            navLinks.forEach(link => {
+                link.style.color = '';
+                if (link.getAttribute('href') === `#${current}`) {
+                    link.style.color = 'var(--secondary-cyan)';
+                }
+            });
+        });
+    </script>
+</body>
+</html>
