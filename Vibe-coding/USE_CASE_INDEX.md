@@ -1,5 +1,19 @@
 # Databricks Vibe Coding Interview - Use Case Index
 
+## ⚡ START HERE: Understanding the "Vibe" Philosophy
+
+**🎯 CRITICAL**: Before diving into technical use cases, read **[VIBE_PAIR_PROGRAMMING_GUIDE.md](./VIBE_PAIR_PROGRAMMING_GUIDE.md)** to understand:
+- This is **collaborative pair programming**, not a traditional coding test
+- How to **think out loud** continuously (the most important skill!)
+- How to **use AI tools effectively** (you pilot, AI assists)
+- The **3 evaluation criteria**: Computational Thinking, Code Stewardship, Resilience
+- When and how to use **"Bail Out"** for syntax issues
+- **Real interview transcripts** showing good communication patterns
+
+**This interview tests HOW YOU THINK and COMMUNICATE, not what you've memorized.**
+
+---
+
 ## Overview
 
 This collection contains **4 comprehensive end-to-end use cases** designed for Databricks interview preparation. Each use case demonstrates different data patterns, architectural approaches, and optimization techniques.
@@ -278,6 +292,7 @@ Before your interview, ensure you can:
 ## 📚 Quick Reference Links
 
 ### **Core Prep Materials**
+- **[🎯 VIBE Pair Programming Guide](./VIBE_PAIR_PROGRAMMING_GUIDE.md)** - **START HERE!** Communication, AI usage, thinking out loud
 - [Main Interview Guide](./Databricks_Vibe_Interview_Prep_Guide.md) - Overall strategy
 - [Technical Concepts](./Databricks_Technical_Concepts.md) - Spark fundamentals
 - [Curveball Drills](./CURVEBALL_DRILLS.md) - Practice rapid-fire scenarios
