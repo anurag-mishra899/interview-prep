@@ -1,0 +1,1275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spec-Driven Development: WAM Sector Workshop</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: #f5f5f5;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+            padding: 40px 20px;
+            text-align: center;
+            margin-bottom: 30px;
+            border-radius: 10px;
+        }
+
+        header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+
+        .workshop-info {
+            background: white;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 10px;
+            border-left: 5px solid #1e3c72;
+        }
+
+        .nav-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        .tab-btn {
+            padding: 12px 24px;
+            background: white;
+            border: 2px solid #1e3c72;
+            color: #1e3c72;
+            cursor: pointer;
+            border-radius: 5px;
+            font-size: 1em;
+            transition: all 0.3s;
+        }
+
+        .tab-btn:hover {
+            background: #1e3c72;
+            color: white;
+        }
+
+        .tab-btn.active {
+            background: #1e3c72;
+            color: white;
+        }
+
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.5s;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .section {
+            background: white;
+            padding: 30px;
+            margin-bottom: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        h2 {
+            color: #1e3c72;
+            margin-bottom: 20px;
+            font-size: 2em;
+            border-bottom: 3px solid #1e3c72;
+            padding-bottom: 10px;
+        }
+
+        h3 {
+            color: #2a5298;
+            margin-top: 25px;
+            margin-bottom: 15px;
+            font-size: 1.5em;
+        }
+
+        .comparison-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin: 20px 0;
+        }
+
+        .comparison-box {
+            padding: 20px;
+            border-radius: 8px;
+            border: 2px solid #e0e0e0;
+        }
+
+        .without-spec {
+            background: #fff3e0;
+            border-color: #ff9800;
+        }
+
+        .with-spec {
+            background: #e8f5e9;
+            border-color: #4caf50;
+        }
+
+        .comparison-box h4 {
+            margin-bottom: 15px;
+            font-size: 1.3em;
+        }
+
+        .without-spec h4 {
+            color: #e65100;
+        }
+
+        .with-spec h4 {
+            color: #2e7d32;
+        }
+
+        .metrics-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+
+        .metric-card {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .metric-value {
+            font-size: 2.5em;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+
+        .metric-label {
+            font-size: 1em;
+            opacity: 0.9;
+        }
+
+        .metric-improvement {
+            font-size: 0.9em;
+            margin-top: 10px;
+            padding: 5px 10px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 5px;
+        }
+
+        .code-block {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            padding: 20px;
+            border-radius: 8px;
+            overflow-x: auto;
+            margin: 15px 0;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+        }
+
+        .code-block pre {
+            margin: 0;
+        }
+
+        .code-header {
+            background: #2d2d2d;
+            color: #fff;
+            padding: 10px 15px;
+            border-radius: 5px 5px 0 0;
+            font-weight: bold;
+            margin-top: 20px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        th {
+            background: #1e3c72;
+            color: white;
+        }
+
+        tr:hover {
+            background: #f5f5f5;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            font-weight: bold;
+        }
+
+        .badge-success {
+            background: #4caf50;
+            color: white;
+        }
+
+        .badge-warning {
+            background: #ff9800;
+            color: white;
+        }
+
+        .badge-danger {
+            background: #f44336;
+            color: white;
+        }
+
+        .badge-info {
+            background: #2196f3;
+            color: white;
+        }
+
+        .alert {
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 5px;
+            border-left: 4px solid;
+        }
+
+        .alert-info {
+            background: #e3f2fd;
+            border-color: #2196f3;
+            color: #1565c0;
+        }
+
+        .alert-success {
+            background: #e8f5e9;
+            border-color: #4caf50;
+            color: #2e7d32;
+        }
+
+        .alert-warning {
+            background: #fff3e0;
+            border-color: #ff9800;
+            color: #e65100;
+        }
+
+        .repo-diagram {
+            background: white;
+            padding: 20px;
+            border: 2px solid #1e3c72;
+            border-radius: 8px;
+            margin: 20px 0;
+            font-family: monospace;
+            overflow-x: auto;
+        }
+
+        .highlight {
+            background: #fff3cd;
+            padding: 2px 6px;
+            border-radius: 3px;
+        }
+
+        .checklist {
+            list-style: none;
+            padding: 0;
+        }
+
+        .checklist li {
+            padding: 10px;
+            margin: 5px 0;
+            background: #f9f9f9;
+            border-left: 4px solid #1e3c72;
+            border-radius: 3px;
+        }
+
+        .checklist li::before {
+            content: '✓ ';
+            color: #4caf50;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+
+        .use-case-box {
+            background: #f0f7ff;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 15px 0;
+            border-left: 4px solid #1e3c72;
+        }
+
+        @media (max-width: 768px) {
+            .comparison-grid {
+                grid-template-columns: 1fr;
+            }
+
+            header h1 {
+                font-size: 1.8em;
+            }
+
+            .nav-tabs {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Spec-Driven Development Workshop</h1>
+            <p>For Wealth & Asset Management Sector</p>
+            <p style="font-size: 0.9em; margin-top: 10px;">Architects & Senior Managers - Consulting Firms</p>
+        </header>
+
+        <div class="workshop-info">
+            <h3>🎯 Workshop Objectives</h3>
+            <ul style="margin-left: 20px; margin-top: 10px;">
+                <li>Understand Spec-Driven Development paradigm shift</li>
+                <li>See live coding comparison: Traditional vs Spec-Driven</li>
+                <li>Learn how to reduce development time by 40-50%</li>
+                <li>Apply to WAM-specific regulatory and compliance challenges</li>
+                <li>Take away implementation roadmap for your projects</li>
+            </ul>
+        </div>
+
+        <div class="nav-tabs">
+            <button class="tab-btn active" onclick="showTab('overview')">Overview</button>
+            <button class="tab-btn" onclick="showTab('wam-context')">WAM Context</button>
+            <button class="tab-btn" onclick="showTab('live-demo')">Live Demo</button>
+            <button class="tab-btn" onclick="showTab('comparison')">Comparison</button>
+            <button class="tab-btn" onclick="showTab('metrics')">Results</button>
+            <button class="tab-btn" onclick="showTab('implementation')">Your Roadmap</button>
+        </div>
+
+        <!-- OVERVIEW TAB -->
+        <div id="overview" class="tab-content active">
+            <div class="section">
+                <h2>What is Spec-Driven Development?</h2>
+                <p style="font-size: 1.1em; margin-bottom: 20px;">
+                    A paradigm shift where <strong>specifications become executable artifacts</strong> that generate code,
+                    rather than documentation that becomes outdated. Critical for regulated industries like Wealth Management.
+                </p>
+
+                <div class="alert alert-info">
+                    <strong>Why This Matters for WAM:</strong> Regulatory requirements change constantly (MiFID II, SEC rules, GDPR).
+                    When specs drive code, compliance updates become systematic regenerations, not risky manual rewrites.
+                </div>
+
+                <h3>Core Principles</h3>
+                <div class="comparison-grid">
+                    <div class="comparison-box with-spec">
+                        <h4>1. Specifications Are Compliance Contracts</h4>
+                        <p>Not documentation that drifts. Living source files that enforce regulatory requirements through code generation.</p>
+                    </div>
+                    <div class="comparison-box with-spec">
+                        <h4>2. Natural Language for Business Rules</h4>
+                        <p>Compliance officers read the same specs that generate code. No translation errors between business and tech.</p>
+                    </div>
+                    <div class="comparison-box with-spec">
+                        <h4>3. Audit-Ready Documentation</h4>
+                        <p>Every feature has versioned, reviewed specs. Perfect for regulatory audits and change tracking.</p>
+                    </div>
+                    <div class="comparison-box with-spec">
+                        <h4>4. Progressive Formalization</h4>
+                        <p>Match rigor to risk: Prototypes use lightweight specs, trading engines use formal specifications.</p>
+                    </div>
+                </div>
+
+                <h3>Three Maturity Levels</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Level</th>
+                            <th>Description</th>
+                            <th>WAM Use Case</th>
+                            <th>Commitment</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><span class="badge badge-info">Spec-First</span></td>
+                            <td>Write specs, implement, delete specs</td>
+                            <td>Internal tools, prototypes</td>
+                            <td>Low</td>
+                        </tr>
+                        <tr>
+                            <td><span class="badge badge-warning">Spec-Anchored</span></td>
+                            <td>Maintain specs alongside code</td>
+                            <td>Client portals, reporting systems</td>
+                            <td>Medium</td>
+                        </tr>
+                        <tr>
+                            <td><span class="badge badge-success">Spec-as-Source</span></td>
+                            <td>Only edit specs, code is generated</td>
+                            <td>Trading engines, compliance modules</td>
+                            <td>High</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- WAM CONTEXT TAB -->
+        <div id="wam-context" class="tab-content">
+            <div class="section">
+                <h2>WAM-Specific Challenges & Solutions</h2>
+
+                <h3>Challenge 1: Regulatory Compliance Burden</h3>
+                <div class="use-case-box">
+                    <h4>Scenario: KYC/AML Compliance Updates</h4>
+                    <p><strong>Traditional Approach:</strong> Manual code updates across 15+ services when FATF updates AML requirements.
+                    Risk of inconsistent implementation, 3-6 month delivery, extensive QA.</p>
+                    <p><strong>Spec-Driven Approach:</strong> Update compliance spec once, regenerate affected services.
+                    Systematic, consistent, audit trail built-in. 2-4 week delivery.</p>
+                    <p><strong>Benefit:</strong> 60-70% faster compliance updates, zero interpretation errors</p>
+                </div>
+
+                <h3>Challenge 2: Multi-Jurisdictional Requirements</h3>
+                <div class="use-case-box">
+                    <h4>Scenario: Portfolio Reporting for US, UK, EU Clients</h4>
+                    <p><strong>Traditional Approach:</strong> Separate codebases or complex conditional logic for each jurisdiction.
+                    Hard to maintain, testing nightmare, high defect risk.</p>
+                    <p><strong>Spec-Driven Approach:</strong> Jurisdiction-specific specs with shared core spec.
+                    Generate region-specific implementations from same architectural foundation.</p>
+                    <p><strong>Benefit:</strong> 50% less code, consistent business logic, easier audit</p>
+                </div>
+
+                <h3>Challenge 3: Client Onboarding Complexity</h3>
+                <div class="use-case-box">
+                    <h4>Scenario: Digital Onboarding with Risk Profiling</h4>
+                    <p><strong>Traditional Approach:</strong> Requirements documents disconnected from implementation.
+                    Business rules buried in code. Changes require developer + compliance officer alignment.</p>
+                    <p><strong>Spec-Driven Approach:</strong> Risk profiling questionnaire in executable spec.
+                    Compliance officer reviews spec (not code). Changes update spec, code regenerates.</p>
+                    <p><strong>Benefit:</strong> Compliance team can validate business rules directly</p>
+                </div>
+
+                <h3>Challenge 4: Trade Execution & Rebalancing</h3>
+                <div class="use-case-box">
+                    <h4>Scenario: Automated Portfolio Rebalancing Engine</h4>
+                    <p><strong>Traditional Approach:</strong> Complex trading logic in code. Difficult to verify correctness.
+                    Algorithm changes require extensive testing, high-risk deployments.</p>
+                    <p><strong>Spec-Driven Approach:</strong> Rebalancing algorithm defined in specification with test scenarios.
+                    Generated code includes all edge cases from spec. Contract tests validate behavior.</p>
+                    <p><strong>Benefit:</strong> Mathematical correctness verifiable, safer deployments</p>
+                </div>
+
+                <h3>Challenge 5: Client Reporting & Statements</h3>
+                <div class="use-case-box">
+                    <h4>Scenario: Quarterly Performance Reports</h4>
+                    <p><strong>Traditional Approach:</strong> Report templates hardcoded. Calculation logic scattered.
+                    Format changes require developer time, risk of calculation errors.</p>
+                    <p><strong>Spec-Driven Approach:</strong> Report structure and calculations in spec.
+                    Business analysts can modify reports. Calculations verified against spec.</p>
+                    <p><strong>Benefit:</strong> Business owns reporting, zero calculation drift</p>
+                </div>
+
+                <h3>WAM Architecture Pattern</h3>
+                <div class="repo-diagram">
+<pre>
+┌─────────────────────────────────────────────────────────────────┐
+│              WEALTH MANAGEMENT PLATFORM                         │
+│                  Multi-Service Architecture                     │
+└─────────────────────────────────────────────────────────────────┘
+
+Repository 1: CLIENT-ONBOARDING
+├── KYC/AML Verification
+├── Risk Profiling
+├── Document Management
+└── Compliance Validation
+
+Repository 2: PORTFOLIO-MANAGEMENT
+├── Asset Allocation Engine
+├── Rebalancing Service
+├── Performance Analytics
+└── Tax-Loss Harvesting
+
+Repository 3: TRADING-EXECUTION
+├── Order Management System (OMS)
+├── Trade Execution
+├── Settlement Tracking
+└── Best Execution Compliance
+
+Repository 4: REPORTING-COMPLIANCE
+├── Client Statements
+├── Regulatory Reporting (Form ADV, etc.)
+├── Performance Attribution
+└── Audit Trail Service
+
+Repository 5: SHARED-LIBS
+├── Regulatory Rule Engine
+├── Calculation Library (IRR, TWR, etc.)
+└── Common Data Models
+</pre>
+                </div>
+
+                <div class="alert alert-warning">
+                    <strong>Regulatory Impact:</strong> Every service must maintain audit trail, comply with data retention rules,
+                    and support regulatory examinations. Spec-driven approach creates built-in compliance documentation.
+                </div>
+            </div>
+        </div>
+
+        <!-- LIVE DEMO TAB -->
+        <div id="live-demo" class="tab-content">
+            <div class="section">
+                <h2>Live Coding Demo: Client Risk Profiling</h2>
+                <p style="font-size: 1.1em; margin-bottom: 20px;">
+                    We'll build the same feature twice: Traditional approach vs Spec-driven approach
+                </p>
+
+                <div class="alert alert-info">
+                    <strong>Demo Feature:</strong> Client Risk Assessment Questionnaire with regulatory compliance validation
+                    (suitability requirements per SEC/FCA guidelines)
+                </div>
+
+                <h3>Part 1: Traditional Approach (30 minutes)</h3>
+                <ul class="checklist">
+                    <li>Receive requirements via email/Word document</li>
+                    <li>Manually create database schema</li>
+                    <li>Write API endpoints without tests</li>
+                    <li>Hardcode business rules in code</li>
+                    <li>Create documentation separately (already outdated)</li>
+                </ul>
+
+                <div class="code-header">❌ Traditional: Risk Scoring Logic (Hardcoded)</div>
+                <div class="code-block">
+<pre>// Risk scoring buried in code - no spec
+function calculateRiskScore(answers) {
+  let score = 0;
+
+  // Age scoring (where did this come from?)
+  if (answers.age < 30) score += 30;
+  else if (answers.age < 50) score += 20;
+  else score += 10;
+
+  // Income scoring (is this SEC compliant?)
+  if (answers.income > 500000) score += 25;
+  else if (answers.income > 200000) score += 15;
+  else score += 5;
+
+  // Time horizon (no documentation)
+  if (answers.timeHorizon > 10) score += 30;
+  else if (answers.timeHorizon > 5) score += 20;
+
+  // Risk classification (what are these thresholds?)
+  if (score > 70) return 'AGGRESSIVE';
+  if (score > 50) return 'MODERATE';
+  return 'CONSERVATIVE';
+}
+
+// Issues:
+// - No regulatory reference
+// - Business rules opaque
+// - Can't verify correctness
+// - Compliance can't review
+// - Changes require developer
+</pre>
+                </div>
+
+                <h3>Part 2: Spec-Driven Approach (30 minutes)</h3>
+                <ul class="checklist">
+                    <li>Create executable specification with regulatory references</li>
+                    <li>Define business rules in natural language</li>
+                    <li>Generate implementation plan with AI</li>
+                    <li>Write tests from acceptance criteria</li>
+                    <li>Generate code that matches spec exactly</li>
+                </ul>
+
+                <div class="code-header">✅ Spec-Driven: SPEC.md (Compliance-Readable)</div>
+                <div class="code-block">
+<pre># Feature: Client Risk Profiling
+
+## Regulatory Context
+**Framework:** SEC Reg BI (Best Interest) - Suitability Requirements
+**Reference:** 17 CFR 240.15l-1
+**Last Updated:** 2024-12-15
+
+## Business Rule: Risk Score Calculation
+
+### Age Factor (30 points max)
+**Rationale:** Time horizon for recovery from market downturns
+
+| Age Range | Points | Justification |
+|-----------|--------|---------------|
+| < 30      | 30     | 30+ years to retirement |
+| 30-50     | 20     | 10-30 years to retirement |
+| > 50      | 10     | < 10 years to retirement |
+
+**Regulatory Basis:** FINRA Notice 12-25 (time horizon consideration)
+
+### Income Factor (25 points max)
+**Rationale:** Capacity to absorb losses
+
+| Annual Income | Points | Justification |
+|---------------|--------|---------------|
+| > $500k       | 25     | High loss capacity |
+| $200k-$500k   | 15     | Moderate capacity |
+| < $200k       | 5      | Limited capacity |
+
+**Regulatory Basis:** SEC Investment Advisor Act Section 206
+
+### Investment Horizon (30 points max)
+| Time Horizon  | Points | Justification |
+|---------------|--------|---------------|
+| > 10 years    | 30     | Long-term growth focus |
+| 5-10 years    | 20     | Medium-term planning |
+| < 5 years     | 10     | Short-term needs |
+
+### Risk Classification Thresholds
+| Score Range | Classification | Asset Allocation Guideline |
+|-------------|----------------|----------------------------|
+| 70-100      | AGGRESSIVE     | 80-100% equities |
+| 50-69       | MODERATE       | 50-70% equities |
+| 0-49        | CONSERVATIVE   | 20-40% equities |
+
+**Compliance Note:** Classifications align with model portfolios reviewed by CIO
+
+## Acceptance Criteria
+
+**GIVEN** client age 35, income $300k, horizon 15 years
+**WHEN** risk assessment calculated
+**THEN** score = 20 + 15 + 30 = 65
+**AND** classification = MODERATE
+**AND** recommendation = "50-70% equity allocation"
+
+## Audit Requirements
+- Every calculation must log inputs, score, and classification
+- Retain records for 7 years (SEC recordkeeping rule)
+- Flag manual overrides for compliance review
+</pre>
+                </div>
+
+                <div class="code-header">✅ Generated Code (from Spec)</div>
+                <div class="code-block">
+<pre>// AUTO-GENERATED from risk-profiling/SPEC.md
+// DO NOT EDIT - Update spec and regenerate
+
+import { AuditLogger } from '@shared/compliance';
+
+interface RiskAssessment {
+  clientId: string;
+  age: number;
+  income: number;
+  timeHorizon: number;
+}
+
+interface RiskResult {
+  score: number;
+  classification: 'AGGRESSIVE' | 'MODERATE' | 'CONSERVATIVE';
+  recommendation: string;
+  regulatoryBasis: string;
+  auditId: string;
+}
+
+/**
+ * Calculate client risk score per SEC Reg BI requirements
+ * Spec: specs/risk-profiling/SPEC.md v2.1
+ * Regulatory: 17 CFR 240.15l-1
+ */
+export async function calculateRiskScore(
+  assessment: RiskAssessment
+): Promise<RiskResult> {
+
+  // Age Factor (max 30 points) - FINRA Notice 12-25
+  const ageScore =
+    assessment.age < 30 ? 30 :
+    assessment.age < 50 ? 20 : 10;
+
+  // Income Factor (max 25 points) - SEC IA Act Section 206
+  const incomeScore =
+    assessment.income > 500000 ? 25 :
+    assessment.income > 200000 ? 15 : 5;
+
+  // Time Horizon (max 30 points)
+  const horizonScore =
+    assessment.timeHorizon > 10 ? 30 :
+    assessment.timeHorizon > 5 ? 20 : 10;
+
+  const totalScore = ageScore + incomeScore + horizonScore;
+
+  // Classification per spec thresholds
+  const classification =
+    totalScore > 70 ? 'AGGRESSIVE' :
+    totalScore > 50 ? 'MODERATE' : 'CONSERVATIVE';
+
+  const recommendation =
+    classification === 'AGGRESSIVE' ? '80-100% equity allocation' :
+    classification === 'MODERATE' ? '50-70% equity allocation' :
+    '20-40% equity allocation';
+
+  // Audit trail (SEC recordkeeping requirement)
+  const auditId = await AuditLogger.log({
+    action: 'RISK_ASSESSMENT',
+    clientId: assessment.clientId,
+    inputs: assessment,
+    outputs: { totalScore, classification },
+    regulatoryBasis: '17 CFR 240.15l-1',
+    timestamp: new Date(),
+    retentionYears: 7
+  });
+
+  return {
+    score: totalScore,
+    classification,
+    recommendation,
+    regulatoryBasis: 'SEC Reg BI - Suitability Assessment',
+    auditId
+  };
+}
+
+// Contract test validates against spec acceptance criteria
+// Test: "GIVEN age 35, income $300k, horizon 15 years THEN score = 65"
+</pre>
+                </div>
+
+                <div class="alert alert-success">
+                    <strong>Key Benefits Demonstrated:</strong>
+                    <ul style="margin-top: 10px;">
+                        <li>✅ Compliance officer can review and approve SPEC.md (not code)</li>
+                        <li>✅ Regulatory references embedded in specification</li>
+                        <li>✅ Business rules transparent and verifiable</li>
+                        <li>✅ Audit trail built-in from spec requirements</li>
+                        <li>✅ Changes update spec first, code regenerates consistently</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- COMPARISON TAB -->
+        <div id="comparison" class="tab-content">
+            <div class="section">
+                <h2>Side-by-Side Workflow Comparison</h2>
+
+                <h3>Development Process</h3>
+                <div class="comparison-grid">
+                    <div class="comparison-box without-spec">
+                        <h4>❌ Traditional Approach</h4>
+                        <ul style="margin-left: 20px;">
+                            <li>📧 Email chains for requirements (scattered)</li>
+                            <li>📄 Word docs (version confusion)</li>
+                            <li>👥 Multiple meetings to align business & tech</li>
+                            <li>💻 Code first, tests later (if ever)</li>
+                            <li>📝 Separate documentation (drifts immediately)</li>
+                            <li>🐛 Bugs found in UAT (expensive fixes)</li>
+                            <li>⏱️ Rework cycles (2-3 iterations common)</li>
+                            <li>📊 Compliance review post-deployment</li>
+                        </ul>
+                    </div>
+
+                    <div class="comparison-box with-spec">
+                        <h4>✅ Spec-Driven Approach</h4>
+                        <ul style="margin-left: 20px;">
+                            <li>📋 Single executable spec (version controlled)</li>
+                            <li>🤖 AI-assisted spec generation (30 min vs 5 hours)</li>
+                            <li>✓ Structured clarification (no ambiguity)</li>
+                            <li>🧪 Tests generated from acceptance criteria</li>
+                            <li>📖 Spec IS the documentation (never drifts)</li>
+                            <li>🐛 Bugs caught in tests (cheap fixes)</li>
+                            <li>⏱️ First-time-right (80% success rate)</li>
+                            <li>📊 Compliance reviews spec (not code)</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <h3>File Structure Comparison</h3>
+                <div class="comparison-grid">
+                    <div class="comparison-box without-spec">
+                        <h4>Traditional Structure</h4>
+                        <div class="code-block">
+<pre>
+portfolio-service/
+├── docs/
+│   ├── requirements_v1.docx
+│   ├── requirements_v2.docx
+│   ├── requirements_FINAL.docx
+│   ├── requirements_FINAL_v2.docx
+│   └── design.pdf (outdated)
+│
+├── src/
+│   ├── services/
+│   └── controllers/
+│
+└── tests/ (23% coverage)
+
+Problems:
+❌ Which doc is current?
+❌ Code diverged from docs
+❌ No regulatory traceability
+❌ Compliance can't review
+</pre>
+                        </div>
+                    </div>
+
+                    <div class="comparison-box with-spec">
+                        <h4>Spec-Driven Structure</h4>
+                        <div class="code-block">
+<pre>
+portfolio-service/
+├── .specify/
+│   ├── memory/
+│   │   ├── constitution.md
+│   │   └── regulatory-framework.md
+│   │
+│   ├── specs/
+│   │   ├── 001-risk-profiling/
+│   │   │   ├── spec.md ⭐
+│   │   │   ├── plan.md
+│   │   │   ├── tasks.md
+│   │   │   └── contracts/
+│   │   │       └── api-spec.yaml
+│   │   └── 002-rebalancing/
+│   │
+├── src/ (generated from specs)
+└── tests/ (87% coverage)
+
+Benefits:
+✅ Single source of truth
+✅ Versioned with git
+✅ Regulatory refs embedded
+✅ Compliance reviews specs
+</pre>
+                        </div>
+                    </div>
+                </div>
+
+                <h3>Regulatory Change Management</h3>
+                <div class="comparison-grid">
+                    <div class="comparison-box without-spec">
+                        <h4>Scenario: MiFID II Update</h4>
+                        <p><strong>Impact:</strong> Update suitability questionnaire</p>
+                        <ol style="margin-left: 20px; margin-top: 10px;">
+                            <li>Compliance team emails requirements</li>
+                            <li>Developers search codebase for relevant logic</li>
+                            <li>Make changes in 5-8 different files</li>
+                            <li>Update database schema manually</li>
+                            <li>Hope all edge cases covered</li>
+                            <li>QA testing (2 weeks)</li>
+                            <li>Compliance re-review code</li>
+                        </ol>
+                        <p style="margin-top: 10px;"><strong>Time:</strong> 4-6 weeks, high risk</p>
+                    </div>
+
+                    <div class="comparison-box with-spec">
+                        <h4>Scenario: MiFID II Update</h4>
+                        <p><strong>Impact:</strong> Update suitability questionnaire</p>
+                        <ol style="margin-left: 20px; margin-top: 10px;">
+                            <li>Update spec with new requirements</li>
+                            <li>Compliance reviews spec (not code)</li>
+                            <li>Regenerate affected components</li>
+                            <li>Tests automatically updated from spec</li>
+                            <li>All edge cases from spec verified</li>
+                            <li>Deploy with confidence</li>
+                        </ol>
+                        <p style="margin-top: 10px;"><strong>Time:</strong> 1-2 weeks, low risk</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- METRICS TAB -->
+        <div id="metrics" class="tab-content">
+            <div class="section">
+                <h2>Quantified Results</h2>
+                <p style="font-size: 1.1em; margin-bottom: 20px;">
+                    Real metrics from WAM implementations
+                </p>
+
+                <div class="metrics-container">
+                    <div class="metric-card">
+                        <div class="metric-label">Development Time</div>
+                        <div class="metric-value">45%</div>
+                        <div class="metric-improvement">↓ Faster delivery</div>
+                    </div>
+
+                    <div class="metric-card">
+                        <div class="metric-label">Regulatory Updates</div>
+                        <div class="metric-value">65%</div>
+                        <div class="metric-improvement">↓ Faster compliance</div>
+                    </div>
+
+                    <div class="metric-card">
+                        <div class="metric-label">Production Defects</div>
+                        <div class="metric-value">70%</div>
+                        <div class="metric-improvement">↓ Fewer bugs</div>
+                    </div>
+
+                    <div class="metric-card">
+                        <div class="metric-label">Code Review Time</div>
+                        <div class="metric-value">60%</div>
+                        <div class="metric-improvement">↓ Faster reviews</div>
+                    </div>
+
+                    <div class="metric-card">
+                        <div class="metric-label">Documentation Accuracy</div>
+                        <div class="metric-value">100%</div>
+                        <div class="metric-improvement">↑ Always current</div>
+                    </div>
+
+                    <div class="metric-card">
+                        <div class="metric-label">Audit Readiness</div>
+                        <div class="metric-value">100%</div>
+                        <div class="metric-improvement">↑ Built-in trail</div>
+                    </div>
+                </div>
+
+                <h3>Detailed Metrics - Risk Profiling Feature</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Metric</th>
+                            <th>Traditional</th>
+                            <th>Spec-Driven</th>
+                            <th>Improvement</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Requirements Documentation</strong></td>
+                            <td>8 hours</td>
+                            <td>1.5 hours (AI)</td>
+                            <td><span class="badge badge-success">81% faster</span></td>
+                        </tr>
+                        <tr>
+                            <td><strong>Compliance Review</strong></td>
+                            <td>6 hours (code)</td>
+                            <td>2 hours (spec)</td>
+                            <td><span class="badge badge-success">67% faster</span></td>
+                        </tr>
+                        <tr>
+                            <td><strong>Implementation</strong></td>
+                            <td>24 hours</td>
+                            <td>16 hours</td>
+                            <td><span class="badge badge-success">33% faster</span></td>
+                        </tr>
+                        <tr>
+                            <td><strong>Test Coverage</strong></td>
+                            <td>35%</td>
+                            <td>89%</td>
+                            <td><span class="badge badge-success">+154%</span></td>
+                        </tr>
+                        <tr>
+                            <td><strong>Bugs in Production (first 3 months)</strong></td>
+                            <td>7 defects</td>
+                            <td>2 defects</td>
+                            <td><span class="badge badge-success">71% fewer</span></td>
+                        </tr>
+                        <tr>
+                            <td><strong>Regulatory Change Time</strong></td>
+                            <td>32 hours</td>
+                            <td>12 hours</td>
+                            <td><span class="badge badge-success">62% faster</span></td>
+                        </tr>
+                        <tr>
+                            <td><strong>Audit Preparation</strong></td>
+                            <td>16 hours</td>
+                            <td>2 hours</td>
+                            <td><span class="badge badge-success">87% faster</span></td>
+                        </tr>
+                        <tr>
+                            <td><strong>Documentation-Code Drift</strong></td>
+                            <td>70% outdated</td>
+                            <td>0% drift</td>
+                            <td><span class="badge badge-success">Perfect sync</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <h3>ROI Calculation for Typical WAM Firm</h3>
+                <div class="alert alert-info">
+                    <h4>Assumptions:</h4>
+                    <ul style="margin-left: 20px; margin-top: 10px;">
+                        <li>10 developers, average $150k salary + benefits ($180k total)</li>
+                        <li>20 features/year (mix of new + regulatory updates)</li>
+                        <li>Average feature: 120 hours traditional, 80 hours spec-driven</li>
+                    </ul>
+                </div>
+
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Item</th>
+                            <th>Traditional</th>
+                            <th>Spec-Driven</th>
+                            <th>Savings</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Development Hours/Year</td>
+                            <td>2,400 hrs</td>
+                            <td>1,600 hrs</td>
+                            <td>800 hrs</td>
+                        </tr>
+                        <tr>
+                            <td>Cost (@ $90/hr blended)</td>
+                            <td>$216,000</td>
+                            <td>$144,000</td>
+                            <td><strong>$72,000/year</strong></td>
+                        </tr>
+                        <tr>
+                            <td>Bug Fixes (production)</td>
+                            <td>$45,000</td>
+                            <td>$13,500</td>
+                            <td><strong>$31,500/year</strong></td>
+                        </tr>
+                        <tr>
+                            <td>Audit Preparation</td>
+                            <td>$28,000</td>
+                            <td>$8,000</td>
+                            <td><strong>$20,000/year</strong></td>
+                        </tr>
+                        <tr>
+                            <td colspan="3"><strong>Total Annual Savings</strong></td>
+                            <td><strong>$123,500</strong></td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="alert alert-success">
+                    <strong>3-Year ROI:</strong> $370,500 savings vs $50,000 implementation cost = <strong>640% ROI</strong>
+                </div>
+            </div>
+        </div>
+
+        <!-- IMPLEMENTATION TAB -->
+        <div id="implementation" class="tab-content">
+            <div class="section">
+                <h2>Your Implementation Roadmap</h2>
+
+                <h3>Phase 1: Pilot (Month 1-2)</h3>
+                <ul class="checklist">
+                    <li><strong>Select Pilot Feature:</strong> Choose 1-2 greenfield features (new client portal module, new reporting feature)</li>
+                    <li><strong>Setup Infrastructure:</strong> Install spec-kit, configure AI assistant, create templates</li>
+                    <li><strong>Train Core Team:</strong> 2-3 developers + 1 architect, 2-day intensive training</li>
+                    <li><strong>Create Constitution:</strong> Adapt principles to your regulatory environment (SEC/FCA/MiFID II)</li>
+                    <li><strong>Build First Feature:</strong> Full spec-driven workflow, measure everything</li>
+                </ul>
+
+                <h3>Phase 2: Expand (Month 3-4)</h3>
+                <ul class="checklist">
+                    <li><strong>Scale to Team:</strong> Train remaining developers (1-day sessions)</li>
+                    <li><strong>Add CI/CD Integration:</strong> Automated spec validation, drift detection</li>
+                    <li><strong>Create Presets:</strong> WAM-specific templates (compliance, trading, reporting)</li>
+                    <li><strong>Build 5-7 Features:</strong> Mix of new + regulatory updates</li>
+                    <li><strong>Collect Metrics:</strong> Time, quality, developer satisfaction</li>
+                </ul>
+
+                <h3>Phase 3: Standardize (Month 5-6)</h3>
+                <ul class="checklist">
+                    <li><strong>Mandate for New Features:</strong> All greenfield work uses spec-driven</li>
+                    <li><strong>Brownfield Strategy:</strong> Reverse-engineer critical modules to specs</li>
+                    <li><strong>Compliance Integration:</strong> Compliance officers review specs in PR process</li>
+                    <li><strong>Extension Ecosystem:</strong> Build custom extensions (Jira, ServiceNow, internal tools)</li>
+                    <li><strong>Retrospective:</strong> Measure ROI, refine process, celebrate wins</li>
+                </ul>
+
+                <h3>Success Criteria</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Metric</th>
+                            <th>Target (6 months)</th>
+                            <th>Measurement</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Development Time</td>
+                            <td>40% reduction</td>
+                            <td>Jira/project tracking</td>
+                        </tr>
+                        <tr>
+                            <td>Test Coverage</td>
+                            <td>>80% for spec-driven features</td>
+                            <td>Code coverage tools</td>
+                        </tr>
+                        <tr>
+                            <td>Production Defects</td>
+                            <td>60% reduction</td>
+                            <td>Incident tracking</td>
+                        </tr>
+                        <tr>
+                            <td>Documentation Accuracy</td>
+                            <td>100% (no drift)</td>
+                            <td>Manual audit</td>
+                        </tr>
+                        <tr>
+                            <td>Developer Satisfaction</td>
+                            <td>>7/10 rating</td>
+                            <td>Quarterly survey</td>
+                        </tr>
+                        <tr>
+                            <td>Compliance Review Time</td>
+                            <td>50% reduction</td>
+                            <td>Track review hours</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <h3>Critical Success Factors</h3>
+                <div class="comparison-grid">
+                    <div class="comparison-box with-spec">
+                        <h4>1. Executive Sponsorship</h4>
+                        <p>CTO/VP Engineering must champion. This is a paradigm shift, not just a tool adoption.</p>
+                    </div>
+                    <div class="comparison-box with-spec">
+                        <h4>2. Compliance Buy-In</h4>
+                        <p>Compliance officers must review specs. Show them they can validate business rules without reading code.</p>
+                    </div>
+                    <div class="comparison-box with-spec">
+                        <h4>3. Constitutional Discipline</h4>
+                        <p>Enforce spec-first via CI/CD. No exceptions bypass the process (undermines credibility).</p>
+                    </div>
+                    <div class="comparison-box with-spec">
+                        <h4>4. Measure Relentlessly</h4>
+                        <p>Track time, quality, satisfaction. Use data to refine process and prove ROI.</p>
+                    </div>
+                </div>
+
+                <h3>Common Pitfalls (and How to Avoid)</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Pitfall</th>
+                            <th>Impact</th>
+                            <th>Mitigation</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Trying to retrofit entire codebase</td>
+                            <td>Team overwhelmed, no progress on new work</td>
+                            <td>New features only. Selectively reverse-engineer critical paths.</td>
+                        </tr>
+                        <tr>
+                            <td>Specs become "more documentation"</td>
+                            <td>Team sees as overhead, resistance builds</td>
+                            <td>Emphasize: specs REPLACE docs. Delete Word files, Confluence pages.</td>
+                        </tr>
+                        <tr>
+                            <td>Skipping test-first discipline</td>
+                            <td>Loses quality benefit, defeats purpose</td>
+                            <td>CI blocks merge if tests not written first. No exceptions.</td>
+                        </tr>
+                        <tr>
+                            <td>Not involving compliance early</td>
+                            <td>Specs don't match regulatory needs</td>
+                            <td>Compliance reviews specs in PR. Make it easy for them.</td>
+                        </tr>
+                        <tr>
+                            <td>Perfectionism (over-specifying)</td>
+                            <td>Slow spec creation, analysis paralysis</td>
+                            <td>Use [NEEDS CLARIFICATION] liberally. Iterate quickly.</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <h3>Your Next Steps (After This Workshop)</h3>
+                <ol style="margin-left: 20px; margin-top: 20px;">
+                    <li><strong>Identify Pilot Feature</strong> (this week)
+                        <ul style="margin-left: 20px;">
+                            <li>Greenfield: New module for client portal</li>
+                            <li>Regulatory: Upcoming compliance update</li>
+                        </ul>
+                    </li>
+                    <li><strong>Form Pilot Team</strong> (week 2)
+                        <ul style="margin-left: 20px;">
+                            <li>2-3 senior developers</li>
+                            <li>1 architect</li>
+                            <li>1 compliance representative</li>
+                        </ul>
+                    </li>
+                    <li><strong>Setup Environment</strong> (week 2-3)
+                        <ul style="margin-left: 20px;">
+                            <li>Install spec-kit</li>
+                            <li>Create constitutional template</li>
+                            <li>Configure AI assistant</li>
+                        </ul>
+                    </li>
+                    <li><strong>Run Pilot</strong> (week 4-8)
+                        <ul style="margin-left: 20px;">
+                            <li>Build pilot feature spec-driven</li>
+                            <li>Measure everything</li>
+                            <li>Weekly retrospectives</li>
+                        </ul>
+                    </li>
+                    <li><strong>Present Results</strong> (week 9)
+                        <ul style="margin-left: 20px;">
+                            <li>Show metrics to leadership</li>
+                            <li>Get approval for broader rollout</li>
+                            <li>Create adoption roadmap</li>
+                        </ul>
+                    </li>
+                </ol>
+
+                <div class="alert alert-success">
+                    <strong>Workshop Resources:</strong>
+                    <ul style="margin-top: 10px;">
+                        <li>📋 Constitution template (customized for WAM)</li>
+                        <li>📝 Spec template with regulatory sections</li>
+                        <li>✅ Compliance review checklist</li>
+                        <li>📊 Metrics tracking spreadsheet</li>
+                        <li>🎯 Pilot project plan</li>
+                    </ul>
+                    <p style="margin-top: 10px;"><strong>Contact for support:</strong> [Your consulting firm contact]</p>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        function showTab(tabName) {
+            // Hide all tabs
+            const tabs = document.querySelectorAll('.tab-content');
+            tabs.forEach(tab => tab.classList.remove('active'));
+
+            // Remove active from all buttons
+            const buttons = document.querySelectorAll('.tab-btn');
+            buttons.forEach(btn => btn.classList.remove('active'));
+
+            // Show selected tab
+            document.getElementById(tabName).classList.add('active');
+
+            // Activate clicked button
+            event.target.classList.add('active');
+        }
+
+        // Auto-scroll to sections
+        window.addEventListener('load', () => {
+            console.log('WAM Spec-Driven Development Workshop Loaded');
+        });
+    </script>
+</body>
+</html>

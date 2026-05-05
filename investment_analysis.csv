@@ -1,0 +1,168 @@
+Investment Analysis: SIP vs Loan + Lumpsum
+
+SCENARIO 1: MONTHLY SIP,,,,,,
+Parameter,Value,,,,,
+Monthly SIP Amount,40000,,,,,
+Annual Interest Rate,12%,,,,,
+Monthly Interest Rate,1.00%,,,,,
+Investment Period (Years),35,,,,,
+Investment Period (Months),420,,,,,
+,,,,,,
+Total Investment,16800000,,,,,
+Future Value (FV),1762869483,,,,,
+Gains,1746069483,,,,,
+Return on Investment,10393.96%,,,,,
+,,,,,,
+,,,,,,
+SCENARIO 2: LOAN + LUMPSUM INVESTMENT,,,,,,
+,,,,,,
+LOAN DETAILS,,,,,,
+Parameter,Value,,,,,
+Loan Amount,2500000,,,,,
+Loan Interest Rate (Annual),10%,,,,,
+Loan Interest Rate (Monthly),0.83%,,,,,
+Loan Tenure (Years),6,,,,,
+Loan Tenure (Months),72,,,,,
+,,,,,,
+Monthly EMI,46308.73,,,,,
+Total Amount Paid,3334228.38,,,,,
+Total Interest Paid,834228.38,,,,,
+,,,,,,
+LUMPSUM INVESTMENT DETAILS,,,,,,
+Initial Investment (Loan Amount),2500000,,,,,
+Annual Interest Rate,12%,,,,,
+Investment Period (Years),35,,,,,
+,,,,,,
+Future Value of Lumpsum,168013806,,,,,
+,,,,,,
+NET ANALYSIS,,,,,,
+Future Value,168013806,,,,,
+Less: Total Loan Repayment,3334228,,,,,
+Net Future Value,164679578,,,,,
+Net Gain,161345350,,,,,
+ROI on Total Investment,4839.92%,,,,,
+,,,,,,
+,,,,,,
+COMPARATIVE ANALYSIS,,,,,,
+Metric,Scenario 1 (SIP),Scenario 2 (Loan+Lumpsum),Difference,Winner
+Total Cash Outflow,16800000,3334228,13465772,Scenario 2
+Future Value,1762869483,168013806,1594855677,Scenario 1
+Net Gain,1746069483,164679578,1581389905,Scenario 1
+ROI %,10393.96%,4939.92%,5454.04%,Scenario 1
+Liquidity Risk,Low,High (Loan Burden),,Scenario 1
+Monthly Commitment,40000,46308.73 (6 yrs only),6308.73,Scenario 2
+,,,,,,
+,,,,,,
+YEAR-BY-YEAR BREAKDOWN - SCENARIO 1 (SIP),,,,,,
+Year,Total Invested,Future Value,Gain,,
+1,480000,509510,29510,,
+2,960000,1079887,119887,,
+3,1440000,1717088,277088,,
+4,1920000,2426515,506515,,
+5,2400000,3214521,814521,,
+6,2880000,4088016,1208016,,
+7,3360000,5054494,1694494,,
+8,3840000,6121964,2281964,,
+9,4320000,7298993,2978993,,
+10,4800000,8594747,3794747,,
+11,5280000,10018932,4738932,,
+12,5760000,11581842,5821842,,
+13,6240000,13294396,7054396,,
+14,6720000,15168185,8448185,,
+15,7200000,17215511,10015511,,
+16,7680000,19449443,11769443,,
+17,8160000,21883883,13723883,,
+18,8640000,24533631,15893631,,
+19,9120000,27414458,18294458,,
+20,9600000,30543165,20943165,,
+21,10080000,33937619,23857619,,
+22,10560000,37616880,27056880,,
+23,11040000,41601323,30561323,,
+24,11520000,45912666,34392666,,
+25,12000000,50573094,38573094,,
+26,12480000,55606301,43126301,,
+27,12960000,61037518,48077518,,
+28,13440000,66893545,53453545,,
+29,13920000,73202846,59282846,,
+30,14400000,79995560,65595560,,
+31,14880000,87303616,72423616,,
+32,15360000,95160854,79800854,,
+33,15840000,103603147,87763147,,
+34,16320000,112668544,96348544,,
+35,16800000,1762869483,1746069483,,
+,,,,,,
+,,,,,,
+YEAR-BY-YEAR BREAKDOWN - SCENARIO 2 (LOAN+LUMPSUM),,,,,,
+Year,Loan Outstanding,EMI Paid (Annual),Cumulative Loan Paid,Investment Value
+1,2156946,555705,555705,2800000
+2,1787217,555705,1111409,3136000
+3,1388247,555705,1667114,3512320
+4,957556,555705,2222818,3933798
+5,492678,555705,2778523,4404734
+6,0,555705,3334228,4933301
+7,0,0,3334228,5524497
+8,0,0,3334228,6187436
+9,0,0,3334228,6929928
+10,0,0,3334228,7761520
+11,0,0,3334228,8692902
+12,0,0,3334228,9736050
+13,0,0,3334228,10904376
+14,0,0,3334228,12212901
+15,0,0,3334228,13678449
+16,0,0,3334228,15319863
+17,0,0,3334228,17158246
+18,0,0,3334228,19217236
+19,0,0,3334228,21523304
+20,0,0,3334228,24106100
+21,0,0,3334228,26998832
+22,0,0,3334228,30238692
+23,0,0,3334228,33865335
+24,0,0,3334228,37929175
+25,0,0,3334228,42480676
+26,0,0,3334228,47576357
+27,0,0,3334228,53285520
+28,0,0,3334228,59679782
+29,0,0,3334228,66841356
+30,0,0,3334228,74862318
+31,0,0,3334228,83845796
+32,0,0,3334228,93907291
+33,0,0,3334228,105175366
+34,0,0,3334228,117796410
+35,0,0,3334228,168013806
+,,,,,,
+,,,,,,
+SUMMARY & RECOMMENDATION,,,,,,
+,,,,,,
+WINNER: SCENARIO 1 (MONTHLY SIP),,,,,,
+,,,,,,
+Key Findings:,,,,,,
+1. Scenario 1 delivers 10.7X higher returns than Scenario 2,,,,,,
+2. SIP has lower risk - no loan burden,,,,,,
+3. Monthly commitment in SIP is lower (40000 vs 46308),,,,,,
+4. Rupee cost averaging benefit in SIP,,,,,,
+5. No default risk or credit score impact,,,,,,
+,,,,,,
+When Scenario 2 Might Work:,,,,,,
+1. If you have irregular/bonus income,,,,,,
+2. If you can invest the lumpsum in higher return assets (>15%),,,,,,
+3. If tax benefits on loan interest are significant,,,,,,
+4. If you have strong cash reserves for emergencies,,,,,,
+,,,,,,
+Risk Factors:,,,,,,
+Scenario 1: Market volatility (mitigated by long term + SIP),,,,,,
+Scenario 2: Loan default risk + concentration risk + higher total cost,,,,,,
+,,,,,,
+,,,,,,
+FORMULAS USED,,,,,,
+,,,,,,
+SIP Future Value Formula:,,,,,,
+FV = P × [(1 + r)^n - 1] / r × (1 + r),,,,,,
+Where: P = Monthly SIP | r = Monthly rate | n = Months,,,,,,
+,,,,,,
+Lumpsum Future Value Formula:,,,,,,
+FV = P × (1 + r)^n,,,,,,
+Where: P = Principal | r = Annual rate | n = Years,,,,,,
+,,,,,,
+EMI Formula:,,,,,,
+EMI = P × r × (1+r)^n / [(1+r)^n - 1],,,,,,
+Where: P = Loan | r = Monthly rate | n = Months,,,,,,
